@@ -1,0 +1,117 @@
+.pular-para-conteudo {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--acento);
+  color: var(--acento-contraste);
+  padding: 0.6rem 1rem;
+  border-radius: 0 0 0.5rem 0;
+  z-index: 10;
+  text-decoration: none;
+}
+
+.pular-para-conteudo:focus {
+  left: 0;
+}
+
+.topo {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: 1rem clamp(1rem, 4vw, 2.5rem);
+  border-bottom: 1px solid var(--borda);
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--texto);
+  text-decoration: none;
+}
+
+.marca-ponto {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: var(--acento);
+}
+
+.nav {
+  display: flex;
+  gap: 1.25rem;
+  margin-inline-start: auto;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  color: var(--tenue);
+  text-decoration: none;
+  font-size: 0.95rem;
+  padding: 0.35rem 0;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-link:hover {
+  color: var(--texto);
+}
+
+.nav-link.ativo {
+  color: var(--texto);
+  border-bottom-color: var(--acento);
+}
+
+.menu-botao {
+  display: none;
+  margin-inline-start: auto;
+  background: transparent;
+  color: var(--texto);
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+}
+
+.conteudo {
+  padding: clamp(1.5rem, 5vw, 3.5rem) clamp(1rem, 4vw, 2.5rem);
+  max-width: 72rem;
+  margin-inline: auto;
+  min-height: 60vh;
+}
+
+.aviso {
+  margin: 0;
+  padding: 0.75rem clamp(1rem, 4vw, 2.5rem);
+  background: color-mix(in srgb, var(--acento) 14%, transparent);
+  border-bottom: 1px solid var(--borda);
+  color: var(--texto);
+  font-size: 0.9rem;
+}
+
+.rodape {
+  padding: 2rem clamp(1rem, 4vw, 2.5rem);
+  border-top: 1px solid var(--borda);
+  color: var(--tenue);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .menu-botao {
+    display: inline-block;
+  }
+
+  .nav {
+    display: none;
+    width: 100%;
+    margin-inline-start: 0;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .nav--aberto {
+    display: flex;
+  }
+}
