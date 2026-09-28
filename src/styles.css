@@ -1,33 +1,122 @@
 @import 'tailwindcss';
 
-:root {
-  color-scheme: dark;
-  --fundo: #121214;
-  --superficie: #1b1b1f;
-  --texto: #f4f4f5;
-  --tenue: #a1a1aa;
-  --acento: #820AD1;
-  --acento-contraste: #ffffff;
-  --borda: color-mix(in srgb, #f4f4f5 14%, transparent);
+/* Tema controlado por classe no <html> (ver ThemeService) — não por media query,
+   para permitir o toggle manual que a spec da Semana 3 pede. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Tokens do Tailwind precisam existir em `@theme` para que as utilitárias sejam
+   geradas (`bg-surface`, `text-cream`, `border-border`...). Cada token aponta
+   para uma variável semântica, e são essas que trocam de valor em `:root`/`.dark`
+   — uma única fonte de verdade para os dois modos. */
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Sora', 'Inter', system-ui, sans-serif;
+
+  --color-ink: var(--ink);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-cream: var(--cream);
+  --color-mute: var(--mute);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-bg: var(--brand-bg);
+  --color-up: var(--up);
+  --color-up-bg: var(--up-bg);
+  --color-down: var(--down);
+  --color-down-bg: var(--down-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
 }
 
-* {
-  box-sizing: border-box;
+/* ---- Semântica: light é a base do documento, dark sobrescreve com a classe ---- */
+:root {
+  color-scheme: light;
+
+  --ink: #f4f4f7;
+  --surface: #ffffff;
+  --surface-2: #f8f8fc;
+  --surface-3: #eeeef3;
+  --border: #e4e4eb;
+  --border-strong: #d0d0db;
+  --cream: #101015;
+  --mute: #6b6b7a;
+  --brand: #5c2bd6;
+  --brand-soft: #7c4dff;
+  --brand-bg: #ede9fe;
+  --up: #059669;
+  --up-bg: #d1fae5;
+  --down: #dc2626;
+  --down-bg: #fee2e2;
+  --warning: #d97706;
+  --warning-bg: #fef3c7;
+  --info: #0284c7;
+  --info-bg: #e0f2fe;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.dark {
+  color-scheme: dark;
+
+  --ink: #0a0a0f;
+  --surface: #14141b;
+  --surface-2: #1a1a24;
+  --surface-3: #222230;
+  --border: #2a2a3a;
+  --border-strong: #3a3a4e;
+  --cream: #f4f4f6;
+  --mute: #9a9aa8;
+  --brand: #8b5cf6;
+  --brand-soft: #a78bfa;
+  --brand-bg: #2e1a4a;
+  --up: #34d399;
+  --up-bg: #064e3b;
+  --down: #f87171;
+  --down-bg: #7f1d1d;
+  --warning: #fbbf24;
+  --warning-bg: #78350f;
+  --info: #38bdf8;
+  --info-bg: #0c4a6e;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.3);
 }
 
 html,
 body {
   margin: 0;
   padding: 0;
-  background: var(--fundo);
-  color: var(--texto);
+  background: var(--ink);
+  color: var(--cream);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 :focus-visible {
-  outline: 2px solid var(--acento);
+  outline: 2px solid var(--brand-soft);
   outline-offset: 2px;
   border-radius: 0.25rem;
 }
@@ -38,5 +127,176 @@ body {
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
+}
+
+/* Utilitários estilo Monday.com */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+
+.card-elevated {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.board-column {
+  background: var(--surface-2);
+  border-radius: var(--radius-lg);
+  min-height: 200px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.stat-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+
+.btn-primary {
+  background: var(--brand);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.btn-primary:hover {
+  background: var(--brand-soft);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: var(--surface-2);
+  color: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+}
+
+.badge-up {
+  background: var(--up-bg);
+  color: var(--up);
+}
+
+.badge-down {
+  background: var(--down-bg);
+  color: var(--down);
+}
+
+.badge-warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.badge-info {
+  background: var(--info-bg);
+  color: var(--info);
+}
+
+.badge-brand {
+  background: var(--brand-bg);
+  color: var(--brand);
+}
+
+.input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  color: var(--cream);
+  font-size: 0.875rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-bg);
+}
+
+.input::placeholder {
+  color: var(--mute);
+}
+
+.table-container {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.table th {
+  background: var(--surface-2);
+  font-weight: 600;
+  color: var(--mute);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.table tbody tr:hover {
+  background: var(--surface-2);
 }

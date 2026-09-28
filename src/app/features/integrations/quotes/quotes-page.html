@@ -1,0 +1,179 @@
+<div class="space-y-6">
+  <section class="card p-5">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h2 class="text-lg font-bold">Cotações</h2>
+        <p class="mt-1 text-sm text-mute">
+          Fonte:
+          @if (algumAoVivo()) {
+            <span style="color: var(--color-up)">BrAPI ao vivo</span>
+          } @else {
+            <span style="color: var(--color-down)">modo demonstração</span>
+          }
+          @if (!temToken) {
+            — sem token: 20 consultas/min, uma por requisição
+          }
+        </p>
+      </div>
+      @if (ultimaAtualizacao()) {
+        <p class="font-mono text-xs text-mute" data-testid="ultima-atualizacao">
+          última consulta {{ ultimaAtualizacao().slice(11, 19) }} UTC
+        </p>
+      }
+    </div>
+
+    <form class="mt-4 flex flex-col gap-3 sm:flex-row" (submit)="buscar($event, tickerInput)">
+      <label class="sr-only" for="ticker-busca">Código do ativo</label>
+      <input
+        #tickerInput
+        id="ticker-busca"
+        name="ticker"
+        type="search"
+        inputmode="text"
+        autocomplete="off"
+        placeholder="PETR4, VALE3, MXRF11…"
+        [value]="busca()"
+        (input)="busca.set($any($event.target).value)"
+        [attr.aria-invalid]="mensagemBusca() ? 'true' : null"
+        [attr.aria-describedby]="mensagemBusca() ? 'ticker-erro' : 'ticker-dica'"
+        class="input flex-1"
+        data-testid="ticker-input"
+      />
+      <button
+        type="submit"
+        class="btn-primary"
+        data-testid="ticker-buscar"
+      >
+        Consultar
+      </button>
+    </form>
+
+    <p id="ticker-dica" class="mt-2 text-xs text-mute">
+      Sugestões:
+      @for (ticker of sugestoes; track ticker) {
+        <button
+          type="button"
+          class="mx-1 rounded-md border border-border px-1.5 py-0.5 font-mono text-xs text-mute transition-colors hover:border-brand-soft hover:text-brand-soft"
+          (click)="sugerir(ticker, tickerInput)"
+        >
+          {{ ticker }}
+        </button>
+      }
+    </p>
+
+    @if (mensagemBusca()) {
+      <p id="ticker-erro" class="mt-2 text-sm" style="color: var(--color-down)" role="alert" data-testid="ticker-erro">
+        {{ mensagemBusca() }}
+      </p>
+    }
+
+    @if (erro()) {
+      <p class="mt-3 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm" role="status" data-testid="erro-api">
+        {{ erro() }}
+      </p>
+    }
+  </section>
+
+  @if (emAlta().length > 0) {
+    <section aria-labelledby="destaques-title" class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <h2 id="destaques-title" class="sr-only">Destaques do mercado</h2>
+
+      @for (grupo of [{ titulo: 'Maiores altas', itens: emAlta(), classe: 'up' }, { titulo: 'Maiores quedas', itens: emQueda(), classe: 'down' }]; track grupo.titulo) {
+        <article class="card p-5">
+          <h3 class="mb-3 text-sm font-bold uppercase tracking-wide text-mute">{{ grupo.titulo }}</h3>
+          <ul class="space-y-2">
+            @for (item of grupo.itens; track item.quote.ticker) {
+              <li class="flex items-center justify-between gap-3 text-sm">
+                <span class="font-medium">{{ item.quote.ticker }}</span>
+                <span class="text-mute tabular-nums">{{ preco(item.quote.preco) }}</span>
+                <span
+                  class="w-24 text-right font-medium tabular-nums"
+                  [style.color]="item.quote.variacaoPercent >= 0 ? 'var(--color-up)' : 'var(--color-down)'"
+                >
+                  {{ variacao(item.quote.variacaoPercent) }}
+                </span>
+              </li>
+            }
+          </ul>
+        </article>
+      }
+    </section>
+  }
+
+  <section class="table-container">
+    <div class="flex items-center justify-between gap-4 border-b border-border p-4">
+      <h2 class="text-lg font-bold">Carteira de cotações</h2>
+      <span class="text-xs text-mute" data-testid="contagem-cotacoes">{{ lista().length }} ativos</span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="table" data-testid="tabela-cotacoes">
+        <caption class="sr-only">Cotações dos ativos consultados</caption>
+        <thead>
+          <tr>
+            <th scope="col">Ativo</th>
+            <th scope="col" class="text-right">Preço</th>
+            <th scope="col" class="text-right">Variação</th>
+            <th scope="col" class="text-right">Dia (min/max)</th>
+            <th scope="col" class="text-right">Volume</th>
+            <th scope="col" class="text-right">Valor de mercado</th>
+            <th scope="col">Fonte</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of lista(); track item.quote.ticker) {
+            <tr>
+              <th scope="row" class="text-left font-medium">
+                <span class="flex items-center gap-2">
+                  @if (carregando().has(item.quote.ticker)) {
+                    <span
+                      class="h-1.5 w-1.5 animate-pulse rounded-full"
+                      style="background: var(--color-brand-soft)"
+                      aria-label="Carregando"
+                    ></span>
+                  }
+                  {{ item.quote.ticker }}
+                </span>
+                <span class="block max-w-[22ch] truncate text-xs font-normal text-mute">
+                  {{ item.quote.nome }}
+                </span>
+              </th>
+              <td class="text-right font-medium tabular-nums">
+                {{ preco(item.quote.preco) }}
+              </td>
+              <td
+                class="text-right tabular-nums"
+                [style.color]="item.quote.variacao >= 0 ? 'var(--color-up)' : 'var(--color-down)'"
+              >
+                {{ variacao(item.quote.variacaoPercent) }}
+                <span class="block text-xs">{{ delta(item.quote.variacao) }}</span>
+              </td>
+              <td class="text-right text-xs text-mute tabular-nums">
+                {{ preco(item.quote.minima, item.quote.moeda) }} / {{ preco(item.quote.maxima, item.quote.moeda) }}
+              </td>
+              <td class="text-right text-mute tabular-nums">{{ volume(item.quote.volume) }}</td>
+              <td class="text-right text-mute tabular-nums">
+                {{ compacta(item.quote.valorMercado) }}
+              </td>
+              <td>
+                @if (item.origin === 'ao_vivo') {
+                  <span class="badge badge-up" data-testid="origem-ao-vivo">ao vivo</span>
+                } @else if (item.origin === 'cache') {
+                  <span class="badge" style="background: var(--color-surface-3); color: var(--color-mute)" data-testid="origem-cache">cache</span>
+                } @else {
+                  <span class="badge badge-brand" data-testid="origem-demo">demo</span>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="px-5 py-8 text-center text-mute">
+                Nenhuma cotação carregada ainda.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,99 @@
+<div class="space-y-6">
+  <header class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight">Transações</h1>
+      <p class="mt-1 text-sm text-mute">Busque, filtre e exporte seu extrato.</p>
+    </div>
+    <button
+      type="button"
+      (click)="exportCsv()"
+      [disabled]="filtered().length === 0"
+      class="btn-primary"
+    >
+      Exportar CSV
+    </button>
+  </header>
+
+  <section aria-label="Filtros" class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <label class="relative block">
+      <span class="sr-only">Buscar transação</span>
+      <input
+        type="search"
+        [ngModel]="search()"
+        (ngModelChange)="onSearch($event)"
+        placeholder="Buscar por descrição, categoria ou tipo…"
+        class="input"
+      />
+    </label>
+
+    <label class="block">
+      <span class="sr-only">Filtrar por tipo</span>
+      <select [ngModel]="type()" (ngModelChange)="onType($event)" class="input">
+        <option value="">Todos os tipos</option>
+        @for (type of types; track type) {
+          <option [value]="type">{{ typeLabel[type] }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="block">
+      <span class="sr-only">Filtrar por categoria</span>
+      <select [ngModel]="category()" (ngModelChange)="onCategory($event)" class="input">
+        <option value="">Todas as categorias</option>
+        @for (category of categories(); track category) {
+          <option [value]="category">{{ categoryLabel[category] ?? category }}</option>
+        }
+      </select>
+    </label>
+  </section>
+
+  <section aria-label="Lista de transações" class="table-container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Descrição</th>
+          <th scope="col">Tipo</th>
+          <th scope="col">Categoria</th>
+          <th scope="col" class="text-right">Valor</th>
+          <th scope="col" class="text-right">Data</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (tx of pageRows(); track tx.id) {
+          <tr>
+            <td>
+              <a routerLink="/conta/{{ tx.accountId }}" class="font-medium hover:text-brand-soft">
+                {{ tx.description }}
+              </a>
+            </td>
+            <td class="text-mute">{{ typeLabel[tx.type] }}</td>
+            <td class="text-mute">{{ categoryLabel[tx.category] ?? tx.category }}</td>
+            <td
+              class="text-right font-semibold tabular-nums"
+              [style.color]="tx.direction === 'in' ? 'var(--color-up)' : 'var(--color-down)'"
+            >
+              {{ signed(tx.amount, tx.direction) }}
+            </td>
+            <td class="text-right text-mute">{{ formatDate(tx.settledAt) }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="px-5 py-10 text-center text-sm text-mute">
+              Nenhuma transação atende aos filtros.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+
+  <p class="text-center text-xs text-mute" aria-live="polite">
+    {{ filtered().length }} transação{{ filtered().length === 1 ? '' : 'ões' }}
+  </p>
+
+  <app-pagination
+    [page]="page()"
+    [totalPages]="totalPages()"
+    (pageChange)="onPageChange($event)"
+  />
+</div>
