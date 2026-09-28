@@ -24,3 +24,21 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# Gerado pelo ambiente/codegen e pela CLI (nunca versionar)
+src/environments/ambiente.local.ts
+**/src/environments/ambiente.local.ts
+
+# Supabase CLI (link local, tokens de sessão)
+/supabase/.temp
+**/supabase/.temp
+
+# Vercel (metadados de projeto e credenciais de CLI)
+.vercel
+**/.vercel
+
+# Relatórios e artefatos de análise
+/bundle-analysis
+**/bundle-analysis
+out.txt
+*.log
