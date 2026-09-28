@@ -87,3 +87,43 @@ Snippet só é ativado quando a variável `CLARITY_PROJECT_ID` estiver definida.
 ## Permanência online
 
 Estratégia zero-standby documentada em [`docs/manter-online.md`](./docs/manter-online.md).
+
+---
+
+## Base navegavel (Semana 3)
+
+Scaffold Angular 22 standalone + zoneless, com shell roteado, Tailwind 4 e o
+mesmo codegen de ambiente usado no `vice-district`. Nenhum build foi executado
+neste PR de proposito — a validacao de build ficou para o fim do dia.
+
+### Rodar local
+
+```bash
+npm install          # o postinstall roda `npm run env` e gera o ambiente
+cp .env.example .env # preencha VITE_SUPABASE_ANON_KEY
+npm start            # http://localhost:4200
+```
+
+### Scripts
+
+| script          | o que faz                                                        |
+| --------------- | ---------------------------------------------------------------- |
+| `npm run env`   | gera `src/environments/ambiente.local.ts` a partir do `.env`     |
+| `npm start`     | `ng serve`                                                        |
+| `npm run build` | build de producao (budget inicial: warning 350 kB / erro 500 kB)  |
+| `npm test`      | unit (Vitest)                                                     |
+| `npm run test:ci` | unit em modo nao interativo + coverage                         |
+| `npm run lint`  | ESLint + angular-eslint                                           |
+
+### Rotas
+
+- `/login` — Login
+- `/dashboard` — Dashboard
+- `/transacoes` — Transacoes
+- `/conta` — Detalhe de conta
+
+### Segredos
+
+`.env` e `src/environments/ambiente.local.ts` sao gitignored. O que vai para o
+repo e apenas o `.env.example`, com placeholders. A `service_role` key nunca
+entra no front — a protecao real e o RLS.

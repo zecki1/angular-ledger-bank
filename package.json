@@ -1,0 +1,47 @@
+{
+  "name": "angular-ledger-bank",
+  "version": "0.0.1",
+  "scripts": {
+    "ng": "ng",
+    "env": "node scripts/gerar-ambiente.mjs",
+    "postinstall": "npm run env",
+    "prestart": "npm run env",
+    "start": "ng serve",
+    "prebuild": "npm run env",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "pretest": "npm run env",
+    "test": "ng test",
+    "test:ci": "ng test --watch=false --coverage",
+    "lint": "ng lint"
+  },
+  "private": true,
+  "packageManager": "npm@11.7.0",
+  "dependencies": {
+    "@angular/common": "^22.1.0",
+    "@angular/compiler": "^22.1.0",
+    "@angular/core": "^22.1.0",
+    "@angular/forms": "^22.1.0",
+    "@angular/platform-browser": "^22.1.0",
+    "@angular/router": "^22.1.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "@supabase/supabase-js": "^2.58.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^22.1.8",
+    "@angular/cli": "^22.1.8",
+    "@angular/compiler-cli": "^22.1.0",
+    "jsdom": "^28.0.0",
+    "prettier": "^3.8.1",
+    "typescript": "~6.0.2",
+    "vitest": "^4.0.8",
+    "tailwindcss": "^4.1.14",
+    "@tailwindcss/postcss": "^4.1.14",
+    "@eslint/js": "^9.36.0",
+    "typescript-eslint": "^8.44.0",
+    "eslint": "^9.36.0",
+    "angular-eslint": "^22.1.0"
+  },
+  "description": "Banking dashboard — dados bancários viram UX"
+}
