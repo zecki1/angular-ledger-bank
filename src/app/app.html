@@ -1,0 +1,45 @@
+<a class="pular-para-conteudo" href="#conteudo">Pular para o conteúdo</a>
+
+<header class="topo">
+  <a class="marca" routerLink="/">
+    <span class="marca-ponto" aria-hidden="true"></span>
+    <span class="marca-texto">Ledger</span>
+  </a>
+
+  <button
+    type="button"
+    class="menu-botao"
+    (click)="alternarMenu()"
+    [attr.aria-expanded]="menuAberto()"
+    aria-controls="navegacao-principal"
+  >
+    Menu
+  </button>
+
+  <nav id="navegacao-principal" class="nav" [class.nav--aberto]="menuAberto()">
+    @for (item of nav; track item.path) {
+      <a
+        class="nav-link"
+        [routerLink]="item.path"
+        routerLinkActive="ativo"
+        (click)="menuAberto.set(false)"
+      >
+        {{ item.rotulo }}
+      </a>
+    }
+  </nav>
+</header>
+
+@if (modoDemo()) {
+  <p class="aviso" role="status">
+    {{ erro() }}
+  </p>
+}
+
+<main id="conteudo" class="conteudo">
+  <router-outlet />
+</main>
+
+<footer class="rodape">
+  <p>Semana 3 · Dashboard · unit Vitest</p>
+</footer>
