@@ -1,0 +1,37 @@
+<div class="space-y-6">
+  <header>
+    <p class="text-sm text-mute">Bem-vindo de volta</p>
+    <h1 class="mt-1 text-3xl font-bold tracking-tight">Olá{{ ', ' + userName() }}</h1>
+    <p class="mt-1 text-sm text-mute">Saldo consolidado: <strong class="text-cream">{{ totalLabel() }}</strong></p>
+  </header>
+
+  <section aria-labelledby="saldo-title" class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <h2 id="saldo-title" class="sr-only">Saldo por conta</h2>
+    @for (account of accounts(); track account.id) {
+      <app-balance-card [account]="account" />
+    }
+  </section>
+
+  <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <div class="stat-card lg:col-span-2">
+      <div class="mb-4 flex items-center justify-between">
+        <div>
+          <h2 id="fluxo-title" class="text-lg font-bold">Fluxo de caixa</h2>
+          <p class="text-xs text-mute">Entradas e saídas nos últimos 30 dias</p>
+        </div>
+        <span class="badge badge-brand">30 dias</span>
+      </div>
+      <app-chart [option]="chartOption()" ariaLabel="Gráfico de fluxo de caixa dos últimos 30 dias em reais" />
+    </div>
+
+    <div class="stat-card">
+      <div class="mb-3 flex items-center justify-between">
+        <h2 id="recentes-title" class="text-lg font-bold">Últimas transações</h2>
+        <a routerLink="/transacoes" class="text-sm font-medium text-brand-soft hover:text-brand-soft/80">
+          Ver todas →
+        </a>
+      </div>
+      <app-transaction-list [transactions]="recent()" />
+    </div>
+  </div>
+</div>

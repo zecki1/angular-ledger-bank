@@ -1,0 +1,149 @@
+<div class="space-y-6">
+  <section aria-labelledby="indicadores-title" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <h2 id="indicadores-title" class="sr-only">Indicadores da carteira</h2>
+
+    <article class="stat-card">
+      <p class="text-xs font-medium uppercase tracking-wide text-mute">Valor de mercado</p>
+      <p class="mt-2 text-2xl font-bold tabular-nums">{{ bRL(portfolio.valorTotal()) }}</p>
+      <p class="mt-1 text-xs text-mute">{{ portfolio.totalEmPosicoes() }} posições</p>
+    </article>
+
+    <article class="stat-card">
+      <p class="text-xs font-medium uppercase tracking-wide text-mute">Custo total</p>
+      <p class="mt-2 text-2xl font-bold tabular-nums">{{ bRL(portfolio.custoTotal()) }}</p>
+      <p class="mt-1 text-xs text-mute">preço médio ponderado</p>
+    </article>
+
+    <article class="stat-card">
+      <p class="text-xs font-medium uppercase tracking-wide text-mute">Maior posição</p>
+      @if (maior(); as pos) {
+        <p class="mt-2 text-2xl font-bold">{{ pos.ticker }}</p>
+        <p class="mt-1 text-xs text-mute">
+          {{ bRL(pos.valor) }} · {{ peso((pos.valor / portfolio.valorTotal()) * 100) }} da carteira
+        </p>
+      } @else {
+        <p class="mt-2 text-2xl font-bold text-mute">—</p>
+      }
+    </article>
+
+    <article class="stat-card">
+      <p class="text-xs font-medium uppercase tracking-wide text-mute">Destaques</p>
+      <p class="mt-2 text-sm">
+        <span style="color: var(--color-up)">{{ melhor()?.ticker ?? '—' }} {{ variacao(melhor()?.resultadoPercent ?? 0) }}</span>
+      </p>
+      <p class="mt-1 text-sm">
+        <span style="color: var(--color-down)">{{ pior()?.ticker ?? '—' }} {{ variacao(pior()?.resultadoPercent ?? 0) }}</span>
+      </p>
+    </article>
+  </section>
+
+  <section class="card p-5">
+    <div class="mb-2 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h2 class="text-lg font-bold">Histórico do ativo principal</h2>
+        <p class="text-xs text-mute">
+          Fonte: {{ algumAoVivo() ? 'BrAPI' : 'seed local' }} — série de {{ range() }}
+        </p>
+      </div>
+
+      <div class="flex items-center gap-1" role="group" aria-label="Período do gráfico">
+        @for (opcao of ranges; track opcao.id) {
+          <button
+            type="button"
+            class="rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
+            [class.btn-primary]="range() === opcao.id"
+            [class.btn-secondary]="range() !== opcao.id"
+            [attr.aria-pressed]="range() === opcao.id"
+            (click)="trocarRange(opcao.id)"
+          >
+            {{ opcao.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <app-chart [option]="serieOption()" ariaLabel="Série histórica de preço do ativo" />
+  </section>
+
+  <section class="flex flex-wrap items-center gap-2" aria-label="Filtrar por classe de ativo">
+    @for (classe of classes(); track classe.id) {
+      <button
+        type="button"
+        class="rounded-lg px-3 py-1.5 text-sm transition-colors"
+        [class.btn-primary]="classeFiltro() === classe.id"
+        [class.btn-secondary]="classeFiltro() !== classe.id"
+        [attr.aria-pressed]="classeFiltro() === classe.id"
+        (click)="classeFiltro.set(classe.id)"
+      >
+        {{ classe.label }}
+      </button>
+    }
+  </section>
+
+  <section class="table-container">
+    <div class="flex items-center justify-between gap-4 border-b border-border p-4">
+      <h2 class="text-lg font-bold">Posições</h2>
+      <button
+        type="button"
+        class="btn-secondary"
+        (click)="recarregar()"
+        [disabled]="carregando()"
+        data-testid="recarregar-cotacoes"
+      >
+        {{ carregando() ? 'Atualizando…' : 'Atualizar cotações' }}
+      </button>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="table" data-testid="tabela-posicoes">
+        <caption class="sr-only">Posições da carteira com preço, valor e resultado</caption>
+        <thead>
+          <tr>
+            <th scope="col">Ativo</th>
+            <th scope="col">Classe</th>
+            <th scope="col" class="text-right">Qtde.</th>
+            <th scope="col" class="text-right">Preço médio</th>
+            <th scope="col" class="text-right">Preço atual</th>
+            <th scope="col" class="text-right">Dia</th>
+            <th scope="col" class="text-right">Valor</th>
+            <th scope="col" class="text-right">Resultado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (pos of ordenadas(); track pos.ticker) {
+            <tr>
+              <th scope="row" class="text-left font-medium">
+                {{ pos.ticker }}
+                <span class="block text-xs font-normal text-mute">{{ pos.nome }}</span>
+              </th>
+              <td class="text-mute">{{ portfolio.classLabels[pos.classe] }}</td>
+              <td class="text-right tabular-nums">{{ numero(pos.quantidade, 0) }}</td>
+              <td class="text-right tabular-nums">{{ preco(pos.precoMedio) }}</td>
+              <td class="text-right tabular-nums">{{ preco(pos.preco) }}</td>
+              <td
+                class="text-right tabular-nums"
+                [style.color]="pos.variacaoDia >= 0 ? 'var(--color-up)' : 'var(--color-down)'"
+              >
+                {{ variacao(pos.variacaoDiaPercent) }}
+              </td>
+              <td class="text-right font-medium tabular-nums">{{ bRL(pos.valor) }}</td>
+              <td
+                class="text-right tabular-nums"
+                [style.color]="pos.resultado >= 0 ? 'var(--color-up)' : 'var(--color-down)'"
+              >
+                {{ bRL(pos.resultado) }}
+                <span class="block text-xs">{{ variacao(pos.resultadoPercent) }}</span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="px-5 py-6 text-center text-mute">
+                Nenhuma posição nesta classe.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

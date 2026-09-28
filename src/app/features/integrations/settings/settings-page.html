@@ -1,0 +1,123 @@
+<div class="space-y-6">
+  <section class="card p-5" aria-labelledby="aparencia-title">
+    <h2 id="aparencia-title" class="text-lg font-bold">Aparência</h2>
+    <p class="mt-1 text-sm text-mute">Vale para este navegador e é aplicado antes da primeira renderização.</p>
+
+    <div class="mt-4 flex flex-wrap items-center gap-3">
+      <button
+        type="button"
+        class="btn-secondary"
+        (click)="toggleTheme()"
+        data-testid="alternar-tema"
+        [attr.aria-pressed]="isDark()"
+      >
+        {{ isDark() ? '☾ Tema escuro ativo' : '☀ Tema claro ativo' }}
+      </button>
+      <p class="text-xs text-mute">
+        Preferência atual: <strong class="text-cream">{{ isDark() ? 'escuro' : 'claro' }}</strong>
+      </p>
+    </div>
+  </section>
+
+  <section class="card p-5" aria-labelledby="dados-title">
+    <h2 id="dados-title" class="text-lg font-bold">Dados</h2>
+    <p class="mt-1 text-sm text-mute">
+      {{ transacoesTotal }} transações disponíveis para exportação. O CSV usa
+      <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">;</code> como separador e
+      BOM UTF-8, então abre direto no Excel em pt-BR.
+    </p>
+
+    <div class="mt-4 flex flex-wrap gap-3">
+      <button
+        type="button"
+        class="btn-primary"
+        (click)="exportarCsv()"
+        data-testid="exportar-csv"
+      >
+        Exportar transações (.csv)
+      </button>
+
+      <button
+        type="button"
+        class="btn-secondary"
+        (click)="limparCacheCotacoes()"
+        data-testid="recarregar-cotacoes-config"
+      >
+        Recarregar cotações
+      </button>
+
+      <button
+        type="button"
+        class="btn-secondary"
+        (click)="voltarAoDashboard()"
+      >
+        Voltar ao dashboard
+      </button>
+    </div>
+
+    @if (exportadoEm()) {
+      <p class="mt-3 text-sm" style="color: var(--color-up)" role="status" data-testid="csv-ok">
+        Arquivo gerado às {{ exportadoEm() }}.
+      </p>
+    }
+  </section>
+
+  <section class="card p-5" aria-labelledby="moeda-title">
+    <h2 id="moeda-title" class="text-lg font-bold">Moeda de exibição</h2>
+    <p class="mt-1 text-sm text-mute">
+      Afeta apenas a apresentação. Os valores do BrAPI continuam em BRL.
+    </p>
+
+    <div class="mt-4 flex flex-wrap gap-2" role="group" aria-label="Moeda de exibição">
+      @for (opcao of moedas; track opcao) {
+        <button
+          type="button"
+          class="rounded-lg px-3 py-1.5 text-sm transition-colors"
+          [class.btn-primary]="moeda() === opcao"
+          [class.btn-secondary]="moeda() !== opcao"
+          [attr.aria-pressed]="moeda() === opcao"
+          (click)="definirMoeda(opcao)"
+        >
+          {{ opcao }}
+        </button>
+      }
+    </div>
+  </section>
+
+  <section class="card p-5" aria-labelledby="atalhos-title">
+    <h2 id="atalhos-title" class="text-lg font-bold">Atalhos</h2>
+    <dl class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+      @for (
+        atalho of [
+          { teclas: 'g d', acao: 'Ir para o dashboard' },
+          { teclas: 'g i', acao: 'Ir para investimentos' },
+          { teclas: 'g c', acao: 'Ir para cotações' },
+          { teclas: 'g e', acao: 'Ir para conexões' },
+        ];
+        track atalho.teclas
+      ) {
+        <div class="flex items-center justify-between gap-3 rounded-lg bg-surface-2 px-3 py-2">
+          <dt class="text-sm text-mute">{{ atalho.acao }}</dt>
+          <dd>
+            <kbd class="rounded-md border border-border bg-surface px-2 py-0.5 font-mono text-xs">{{ atalho.teclas }}</kbd>
+          </dd>
+        </div>
+      }
+    </dl>
+    <p class="mt-3 text-xs text-mute">
+      Atalhos de duas teclas, no estilo do Linear e do monday. Pressione
+      <kbd class="rounded border border-border bg-surface-2 px-1 font-mono">g</kbd> e depois a segunda
+      tecla; a sequência expira em 1,2 s.
+    </p>
+  </section>
+
+  <section class="card p-5" aria-labelledby="api-title">
+    <h2 id="api-title" class="text-lg font-bold">Cotações</h2>
+    <p class="mt-1 text-sm text-mute">
+      As cotações vêm da BrAPI, chamada em fila para respeitar o limite de 20 requisições por minuto
+      do plano anônimo. Sem <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">VITE_BRAPI_TOKEN</code>
+      cada ativo é consultado individualmente; com token, o app pode pedir lotes e o tempo de espera
+      some.
+    </p>
+  </section>
+</div>
