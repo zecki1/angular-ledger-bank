@@ -9,7 +9,7 @@ import { SupabaseService } from '../../core/supabase';
 export class ContaPage {
   private readonly supabase = inject(SupabaseService);
 
-  protected readonly titulo = 'Detalhe de conta';
+  readonly titulo = 'Detalhe de conta';
   protected readonly descricao = 'Extrato em timeline da conta.';
   protected readonly slugProjeto = 'ledger';
 

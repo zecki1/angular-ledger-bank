@@ -16,10 +16,10 @@ interface ItemNav {
 export class App {
   private readonly supabase = inject(SupabaseService);
 
-  protected readonly titulo = 'Ledger';
+  readonly titulo = 'Ledger';
   protected readonly tagline = 'Banking dashboard — dados bancários viram UX';
   protected readonly semana = 3;
-  protected readonly nav: ItemNav[] = [
+  readonly nav: ItemNav[] = [
     { path: '/login', rotulo: 'Login' },
     { path: '/dashboard', rotulo: 'Dashboard' },
     { path: '/transacoes', rotulo: 'Transacoes' },

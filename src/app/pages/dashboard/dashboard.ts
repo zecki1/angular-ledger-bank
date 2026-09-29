@@ -9,7 +9,7 @@ import { SupabaseService } from '../../core/supabase';
 export class DashboardPage {
   private readonly supabase = inject(SupabaseService);
 
-  protected readonly titulo = 'Dashboard';
+  readonly titulo = 'Dashboard';
   protected readonly descricao = 'Cards de saldo, fluxo de caixa e últimas transações.';
   protected readonly slugProjeto = 'ledger';
 

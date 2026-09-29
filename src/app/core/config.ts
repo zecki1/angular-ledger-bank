@@ -1,4 +1,4 @@
-import { ambienteLocal } from '../environments/ambiente.local';
+import { ambienteLocal } from '../../environments/ambiente.local';
 
 export type Papel = 'admin' | 'analyst' | 'user' | 'viewer';
 
