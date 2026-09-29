@@ -1,0 +1,59 @@
+<div class="space-y-6">
+  <nav aria-label="Navegação" class="text-sm">
+    <a routerLink="/dashboard" class="text-mute hover:text-brand-soft">← Voltar ao dashboard</a>
+  </nav>
+
+  <header class="flex flex-wrap items-end justify-between gap-4 rounded-2xl border border-border bg-surface p-6">
+    <div>
+      <p class="text-sm text-mute">{{ account()?.name ?? 'Conta' }}</p>
+      <h1 class="mt-1 text-3xl font-bold tracking-tight">{{ account() ? brl(account()!.balance) : '—' }}</h1>
+    </div>
+    <dl class="flex gap-6 text-sm">
+      <div>
+        <dt class="text-mute">Entradas</dt>
+        <dd class="mt-1 font-semibold text-up">{{ brl(totalIn()) }}</dd>
+      </div>
+      <div>
+        <dt class="text-mute">Saídas</dt>
+        <dd class="mt-1 font-semibold text-down">{{ brl(totalOut()) }}</dd>
+      </div>
+    </dl>
+  </header>
+
+  <section aria-label="Extrato" class="rounded-2xl border border-border bg-surface p-5">
+    <h2 class="text-lg font-bold">Extrato</h2>
+    @for (group of groups(); track group[0]) {
+      <h3 class="mt-6 text-sm font-semibold capitalize text-brand-soft">{{ formatDay(group[0]) }}</h3>
+      <ul class="divide-y divide-border">
+        @for (tx of group[1]; track tx.id) {
+          <li class="flex items-center gap-4 py-3">
+            <span
+              class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-base"
+              [class]="tx.direction === 'in' ? 'bg-up/10 text-up' : 'bg-down/10 text-down'"
+              aria-hidden="true"
+            >
+              {{ tx.direction === 'in' ? '↓' : '↑' }}
+            </span>
+            <div class="min-w-0 flex-1">
+              <p class="truncate font-medium">{{ tx.description }}</p>
+              <p class="truncate text-xs text-mute">
+                {{ typeLabel[tx.type] }}
+                @if (tx.category) {
+                  · {{ categoryLabel[tx.category] ?? tx.category }}
+                }
+              </p>
+            </div>
+            <p
+              class="shrink-0 text-sm font-semibold tabular-nums"
+              [class]="tx.direction === 'in' ? 'text-up' : 'text-down'"
+            >
+              {{ signed(tx) }}
+            </p>
+          </li>
+        }
+      </ul>
+    } @empty {
+      <p class="py-10 text-center text-sm text-mute">Sem movimentações nesta conta.</p>
+    }
+  </section>
+</div>

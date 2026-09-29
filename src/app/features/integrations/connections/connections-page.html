@@ -1,0 +1,132 @@
+<div class="space-y-6">
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-3" aria-label="Resumo das conexões">
+    <article class="rounded-2xl border border-border bg-surface p-5">
+      <p class="text-xs font-medium uppercase tracking-wide text-mute">Conectadas</p>
+      <p class="mt-2 text-2xl font-bold tabular-nums" data-testid="total-conectadas">
+        {{ integrations.conectadasCount() }}
+      </p>
+    </article>
+    <article class="rounded-2xl border border-border bg-surface p-5">
+      <p class="text-xs font-medium uppercase tracking-wide text-mute">Disponíveis</p>
+      <p class="mt-2 text-2xl font-bold tabular-nums">{{ integrations.disponiveisCount() }}</p>
+    </article>
+    <article class="rounded-2xl border border-border bg-surface p-5">
+      <p class="text-xs font-medium uppercase tracking-wide text-mute">Backend</p>
+      <p class="mt-2 text-lg font-bold">
+        {{ temSupabase() ? 'Supabase conectado' : 'Modo demonstração' }}
+      </p>
+      <p class="mt-1 text-xs text-mute">
+        {{ temSupabase() ? 'contas e transações do Postgres' : 'usando o seed local' }}
+      </p>
+    </article>
+  </section>
+
+  <section aria-labelledby="ambiente-title">
+    <h2 id="ambiente-title" class="mb-3 text-lg font-bold">Gerenciadas pelo ambiente</h2>
+    <ul class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      @for (item of doAmbiente(); track item.id) {
+        <li class="rounded-2xl border border-border bg-surface p-5" [attr.data-testid]="'ambiente-' + item.id">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <span
+                class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-surface-2 text-lg text-mute"
+                aria-hidden="true"
+                >{{ item.icone }}</span
+              >
+              <div>
+                <h3 class="font-bold">{{ item.nome }}</h3>
+                <p class="text-xs text-mute">{{ item.descricao }}</p>
+              </div>
+            </div>
+            <span
+              class="rounded-md px-2 py-0.5 text-xs"
+              [class.bg-up/15]="item.integrada"
+              [class.text-up]="item.integrada"
+              [class.bg-surface-2]="!item.integrada"
+              [class.text-mute]="!item.integrada"
+            >
+              {{ item.integrada ? 'ativa' : 'inativa' }}
+            </span>
+          </div>
+          <p class="mt-3 text-xs text-mute">
+            {{ item.detalhe }} — o estado vem de <code class="rounded bg-surface-2 px-1 font-mono">VITE_SUPABASE_URL</code>,
+            então não há botão para ligar aqui.
+          </p>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section aria-labelledby="conectadas-title">
+    <h2 id="conectadas-title" class="mb-3 text-lg font-bold">Conectadas</h2>
+    <ul class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      @for (item of conectadas(); track item.id) {
+        <li class="rounded-2xl border border-brand/40 bg-brand/5 p-5">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <span
+                class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand/15 text-lg text-brand-soft"
+                aria-hidden="true"
+                >{{ item.icone }}</span
+              >
+              <div>
+                <h3 class="font-bold">{{ item.nome }}</h3>
+                <p class="text-xs text-mute">{{ item.descricao }}</p>
+              </div>
+            </div>
+            <span class="rounded-md bg-up/15 px-2 py-0.5 text-xs text-up">ativa</span>
+          </div>
+          <p class="mt-3 text-xs text-mute">{{ item.detalhe }}</p>
+        </li>
+      } @empty {
+        <li class="rounded-2xl border border-dashed border-border p-6 text-sm text-mute md:col-span-2">
+          Nenhuma integração ativa. Conecte uma abaixo para popular os quadros.
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section aria-labelledby="disponiveis-title">
+    <h2 id="disponiveis-title" class="mb-3 text-lg font-bold">Disponíveis</h2>
+    <ul class="grid grid-cols-1 gap-4 md:grid-cols-2" data-testid="lista-disponiveis">
+      @for (item of disponiveis(); track item.id) {
+        <li class="flex flex-col justify-between gap-4 rounded-2xl border border-border bg-surface p-5">
+          <div>
+            <div class="flex items-center gap-3">
+              <span
+                class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-surface-2 text-lg text-mute"
+                aria-hidden="true"
+                >{{ item.icone }}</span
+              >
+              <h3 class="font-bold">{{ item.nome }}</h3>
+              @if (item.exigeLogin) {
+                <span class="rounded-md border border-border px-2 py-0.5 text-xs text-mute">requer login</span>
+              }
+            </div>
+            <p class="mt-2 text-sm text-mute">{{ item.descricao }}</p>
+            <p class="mt-2 text-xs text-mute">{{ item.detalhe }}</p>
+          </div>
+
+          <button
+            type="button"
+            class="rounded-lg border border-border px-3 py-2 text-sm font-medium text-mute transition-colors hover:border-brand-soft hover:text-brand-soft"
+            (click)="alternar(item.id)"
+            [attr.data-testid]="'conectar-' + item.id"
+          >
+            Conectar
+          </button>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="rounded-2xl border border-border bg-surface p-5">
+    <h2 class="text-lg font-bold">Como funciona</h2>
+    <p class="mt-2 text-sm text-mute">
+      As conexões acima não guardam senha nem token neste app: o estado é local, em
+      <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">localStorage</code>, e serve para
+      mostrar a arquitetura. Só o Supabase é real — ele é derivado das variáveis de ambiente, e a
+      cotação da BrAPI é a única chamada de rede do app. Nenhuma chave é enviada para o frontend.
+    </p>
+  </section>
+</div>

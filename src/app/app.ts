@@ -1,36 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { SupabaseService } from './core/supabase';
-
-interface ItemNav {
-  path: string;
-  rotulo: string;
-}
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
-  templateUrl: './app.html',
-  styleUrl: './app.css',
+  imports: [RouterOutlet],
+  template: '<router-outlet />',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class App {
-  private readonly supabase = inject(SupabaseService);
-
-  readonly titulo = 'Ledger';
-  protected readonly tagline = 'Banking dashboard — dados bancários viram UX';
-  protected readonly semana = 3;
-  readonly nav: ItemNav[] = [
-    { path: '/login', rotulo: 'Login' },
-    { path: '/dashboard', rotulo: 'Dashboard' },
-    { path: '/transacoes', rotulo: 'Transacoes' },
-    { path: '/conta', rotulo: 'Detalhe de conta' },
-  ];
-
-  protected readonly menuAberto = signal(false);
-  protected readonly modoDemo = this.supabase.modoDemo;
-  protected readonly erro = this.supabase.erro;
-
-  protected alternarMenu(): void {
-    this.menuAberto.update((v) => !v);
-  }
-}
+export class App {}

@@ -1,0 +1,186 @@
+<div class="space-y-6">
+  <section aria-labelledby="resumo-title">
+    <h2 id="resumo-title" class="sr-only">Resumo da carteira</h2>
+
+    @if (carregando() && posicoes().length === 0) {
+      <p class="rounded-2xl border border-border bg-surface p-6 text-sm text-mute" role="status">
+        Carregando cotações…
+      </p>
+    } @else {
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <article class="rounded-2xl border border-border bg-surface p-5">
+          <p class="text-xs font-medium uppercase tracking-wide text-mute">Patrimônio investido</p>
+          <p class="mt-2 text-2xl font-bold tabular-nums">{{ bRL(valorTotal()) }}</p>
+          <p class="mt-1 text-xs text-mute">
+            custo total {{ bRL(portfolio.custoTotal()) }}
+          </p>
+        </article>
+
+        <article class="rounded-2xl border border-border bg-surface p-5">
+          <p class="text-xs font-medium uppercase tracking-wide text-mute">Resultado acumulado</p>
+          <p
+            class="mt-2 text-2xl font-bold tabular-nums"
+            [class.text-up]="resultado() >= 0"
+            [class.text-down]="resultado() < 0"
+          >
+            {{ bRL(resultado()) }}
+          </p>
+          <p class="mt-1 text-xs" [class.text-up]="resultadoPercent() >= 0" [class.text-down]="resultadoPercent() < 0">
+            {{ pct(resultadoPercent()) }} no período
+          </p>
+        </article>
+
+        <article class="rounded-2xl border border-border bg-surface p-5">
+          <p class="text-xs font-medium uppercase tracking-wide text-mute">Variação do dia</p>
+          <p
+            class="mt-2 text-2xl font-bold tabular-nums"
+            [class.text-up]="variacaoDiaPercent() >= 0"
+            [class.text-down]="variacaoDiaPercent() < 0"
+          >
+            {{ variacao(variacaoDiaPercent()) }}
+          </p>
+          <p class="mt-1 text-xs text-mute">Somando as {{ totalEmPosicoes() }} posições</p>
+        </article>
+
+        <article class="rounded-2xl border border-border bg-surface p-5">
+          <p class="text-xs font-medium uppercase tracking-wide text-mute">Conexões ativas</p>
+          <p class="mt-2 text-2xl font-bold tabular-nums">{{ conectadasCount() }}</p>
+          <p class="mt-1 text-xs text-mute">
+            Fonte dos dados: {{ algumAoVivo() ? 'BrAPI ao vivo' : 'modo demonstração' }}
+          </p>
+        </article>
+      </div>
+    }
+  </section>
+
+  @if (!algumAoVivo()) {
+    <p
+      class="flex items-start gap-3 rounded-2xl border border-brand/40 bg-brand/10 p-4 text-sm"
+      role="status"
+      data-testid="aviso-demo"
+    >
+      <span aria-hidden="true">⚠</span>
+      <span>
+        <strong class="text-cream">Cotações em modo demonstração.</strong>
+        Não foi possível consultar a BrAPI{{ erro() ? ': ' + erro() : '' }} Os valores abaixo são
+        gerados localmente e mudam a cada ativo, mas não refletem o mercado.
+      </span>
+    </p>
+  }
+
+  <section aria-labelledby="graficos-title" class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <h2 id="graficos-title" class="sr-only">Gráficos da carteira</h2>
+
+    <div class="rounded-2xl border border-border bg-surface p-5 lg:col-span-2">
+      <div class="mb-2 flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-bold">Desempenho</h3>
+          <p class="text-xs text-mute">Carteira ponderada por custo, 3 meses (base 100)</p>
+        </div>
+      </div>
+      <app-chart
+        [option]="performanceOption()"
+        ariaLabel="Gráfico de linha do desempenho da carteira nos últimos três meses"
+      />
+    </div>
+
+    <div class="rounded-2xl border border-border bg-surface p-5">
+      <h3 class="text-lg font-bold">Alocação</h3>
+      <p class="text-xs text-mute">Distribuição por classe de ativo</p>
+
+      <div class="mx-auto mt-2 max-w-[220px]">
+        <app-chart [option]="alocacaoOption()" ariaLabel="Gráfico de rosca da alocação por classe de ativo" />
+      </div>
+
+      <ul class="mt-2 space-y-2">
+        @for (fatia of alocacao(); track fatia.classe) {
+          <li class="flex items-center justify-between gap-3 text-sm">
+            <span class="flex items-center gap-2">
+              <span
+                class="h-2.5 w-2.5 shrink-0 rounded-sm"
+                [style.background]="portfolio.classColors[fatia.classe]"
+                aria-hidden="true"
+              ></span>
+              <span class="text-mute">{{ portfolio.classLabels[fatia.classe] }}</span>
+            </span>
+            <span class="font-medium tabular-nums">{{ peso(fatia.peso) }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="posicoes-title" class="rounded-2xl border border-border bg-surface">
+    <div class="flex items-center justify-between gap-4 border-b border-border p-5">
+      <h3 id="posicoes-title" class="text-lg font-bold">Maiores posições</h3>
+      <a routerLink="/integracoes/investimentos" class="text-sm font-medium text-brand-soft hover:text-cream">
+        Ver carteira →
+      </a>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <caption class="sr-only">Maiores posições da carteira</caption>
+        <thead>
+          <tr class="border-b border-border text-left text-xs uppercase tracking-wide text-mute">
+            <th scope="col" class="px-5 py-3 font-medium">Ativo</th>
+            <th scope="col" class="px-5 py-3 text-right font-medium">Qtde.</th>
+            <th scope="col" class="px-5 py-3 text-right font-medium">Preço</th>
+            <th scope="col" class="px-5 py-3 text-right font-medium">Valor</th>
+            <th scope="col" class="px-5 py-3 text-right font-medium">Resultado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (posicao of topPosicoes(); track posicao.ticker) {
+            <tr class="border-b border-border/50 last:border-0">
+              <th scope="row" class="px-5 py-3 text-left font-medium">
+                {{ posicao.ticker }}
+                <span class="block text-xs font-normal text-mute">{{ posicao.nome }}</span>
+              </th>
+              <td class="px-5 py-3 text-right tabular-nums">{{ posicao.quantidade }}</td>
+              <td class="px-5 py-3 text-right tabular-nums">{{ preco(posicao.preco) }}</td>
+              <td class="px-5 py-3 text-right tabular-nums">{{ bRL(posicao.valor) }}</td>
+              <td
+                class="px-5 py-3 text-right font-medium tabular-nums"
+                [class.text-up]="posicao.resultado >= 0"
+                [class.text-down]="posicao.resultado < 0"
+              >
+                {{ bRL(posicao.resultado) }}
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="px-5 py-6 text-center text-mute">Nenhuma posição carregada.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="quadros-title">
+    <h2 id="quadros-title" class="mb-3 text-lg font-bold">Quadros</h2>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      @for (quadro of quadros; track quadro.id) {
+        <a
+          [routerLink]="quadro.rota"
+          class="group flex flex-col justify-between gap-6 rounded-2xl border border-border bg-surface p-5 transition-colors hover:border-brand/50"
+        >
+          <div class="flex items-start justify-between">
+            <span
+              class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand/15 text-lg text-brand-soft"
+              aria-hidden="true"
+              >{{ quadro.icon }}</span
+            >
+            <span aria-hidden="true" class="text-mute transition-transform group-hover:translate-x-1">→</span>
+          </div>
+          <div>
+            <h3 class="font-bold">{{ quadro.titulo }}</h3>
+            <p class="mt-1 text-sm text-mute">{{ quadro.descricao }}</p>
+            <p class="mt-3 text-xs uppercase tracking-wide text-mute">{{ quadro.destaque }}</p>
+          </div>
+        </a>
+      }
+    </div>
+  </section>
+</div>

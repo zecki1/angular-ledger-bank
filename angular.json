@@ -34,7 +34,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "350kB",
-                  "maximumError": "500kB"
+                  "maximumError": "450kB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -56,10 +56,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "ledger:build:production"
+              "buildTarget": "angular-ledger-bank:build:production"
             },
             "development": {
-              "buildTarget": "ledger:build:development"
+              "buildTarget": "angular-ledger-bank:build:development"
             }
           },
           "defaultConfiguration": "development"
