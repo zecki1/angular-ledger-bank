@@ -18,7 +18,7 @@
         <code>ledger</code>
       </p>
       <button type="button" class="acao" (click)="verificar()" [disabled]="conectando()">
-        { conectando() ? 'Verificando...' : 'Testar conexao' }
+        {{ conectando() ? 'Verificando...' : 'Testar conexao' }}
       </button>
       @if (conexaoOk() === true) {
         <p class="status status--ok" role="status">Conectado.</p>

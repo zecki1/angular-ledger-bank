@@ -9,7 +9,7 @@ import { SupabaseService } from '../../core/supabase';
 export class LoginPage {
   private readonly supabase = inject(SupabaseService);
 
-  protected readonly titulo = 'Login';
+  readonly titulo = 'Login';
   protected readonly descricao = 'Supabase Auth com botao demo `user@demo.dev`.';
   protected readonly slugProjeto = 'ledger';
 
