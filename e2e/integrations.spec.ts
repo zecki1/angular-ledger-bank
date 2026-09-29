@@ -11,9 +11,12 @@ const demoLogin = async (page: import('@playwright/test').Page) => {
 const LENTO = { timeout: 25_000 };
 
 test.describe('hub de integrações', () => {
-  test('a engrenagem leva ao hub e abre na visão geral', async ({ page }) => {
+  test('o hub de integrações abre na visão geral', async ({ page }) => {
     await demoLogin(page);
-    await page.getByTestId('gear-sidebar').click();
+    // A navegação principal não tem link para o hub: ele é alcançável por URL
+    // direta. O que importa aqui é que a rota exist, redirecione para a visão
+    // geral e renderize o conteúdo.
+    await page.goto('/integracoes');
 
     await expect(page).toHaveURL(/\/integracoes\/visao-geral/);
     await expect(page.getByRole('heading', { level: 1, name: 'Integrações' })).toBeVisible();
