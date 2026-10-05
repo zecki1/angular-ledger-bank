@@ -42,3 +42,4 @@ src/environments/ambiente.local.ts
 **/bundle-analysis
 out.txt
 *.log
+.env*
