@@ -43,6 +43,8 @@ jobs:
         run: npm run build
       - name: Testes unitários (cobertura)
         run: npm run test:ci --if-present
+      - name: Instalar browser do Playwright
+        run: npx playwright install --with-deps chromium
       - name: Testes E2E (Playwright)
         run: npm run e2e:ci --if-present
       - name: Salvar evidências

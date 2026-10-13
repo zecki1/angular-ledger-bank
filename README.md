@@ -1,71 +1,162 @@
-# Ledger — angular-ledger-bank
+# Ledger — Dashboard bancário Angular
 
-> Semana(s): 3 · Pilar: **Dashboard** · Teste unitário: **Vitest** · Milestone(s): `m1-ledger`
-> Repo público: [github.com/zecki1/angular-ledger-bank](https://github.com/zecki1/angular-ledger-bank)
+![Angular](https://img.shields.io/badge/Angular-22-DD0031?logo=angular)
+![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript)
+![Tailwind](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss)
+![E2E Tests](https://img.shields.io/badge/E2E-41%2F41%20passing-brightgreen)
+![Unit Tests](https://img.shields.io/badge/Unit-176%2F176%20passing-brightgreen)
+![ESLint](https://img.shields.io/badge/ESLint-0%20errors-green)
+![A11y](https://img.shields.io/badge/axe-0%20critical%20violations-brightgreen)
+![Lighthouse](https://img.shields.io/badge/Lighthouse-A11y%2FSEO%20100-success)
 
-## Objetivo de entrevista
+> Transformar dados bancários em UX: saldo, timeline de transações, charts e dark mode.
+> Pilar **Dashboard** · Semana 3 do roadmap · Milestone `m1-ledger` · Demo pública no GitHub Pages.
 
-transformar dados bancários em UX: saldo, timeline de transações, charts e dark mode
+---
 
-## Stack
+## Screenshots do Produto
 
-- **Angular 22** — standalone, signals, zoneless, OnPush por padrão
-- **Supabase** — Postgres + Auth + RLS (projeto compartilhado `angular-portfolio`)
-- **Tailwind CSS** · **ECharts** (dashboards) · **GSAP** (motion) · **three.js** (3D)
-- **Vercel** — build estático (sem cold start, sempre online)
+### Login (modo demo)
+| Desktop | Mobile |
+|---------|--------|
+| ![Login Desktop](./docs/screenshots/login-desktop.jpg) | ![Login Mobile](./docs/screenshots/login-mobile.jpg) |
 
-## Fluxo de trabalho (Git)
+### Dashboard
+| Desktop | Mobile |
+|---------|--------|
+| ![Dashboard Desktop](./docs/screenshots/dashboard-desktop.jpg) | ![Dashboard Mobile](./docs/screenshots/dashboard-mobile.jpg) |
 
-Ambientes preservados em **português brasileiro** (commits, PRs, issues, CI).
+### Transações
+| Desktop | Mobile |
+|---------|--------|
+| ![Transações Desktop](./docs/screenshots/transacoes-desktop.jpg) | ![Transações Mobile](./docs/screenshots/transacoes-mobile.jpg) |
 
-```
-main      → produção (build estático; nunca push direto)
-homolog   → validação/release de PRs (staging)
-develop   → integração diária (merges das branches feat/*)
-feature   → feat/<assunto> + PR para develop (boas práticas de código limpo)
-```
+### Extrato da conta
+| Desktop | Mobile |
+|---------|--------|
+| ![Extrato Desktop](./docs/screenshots/conta-extrato-desktop.jpg) | ![Extrato Mobile](./docs/screenshots/conta-extrato-mobile.jpg) |
 
-- **Commits:** `feat:`, `fix:`, `test:`, `docs:`, `design:`, `ops:`, `backend:` (conventional commits)
-- **PRs:** sempre via **pull request template**; revisados e mergeados por milestone
-- **main:** protegida — merge somente via PR de `homolog`
-- Rastreabilidade com issues, labels (`feat/test/design/ops/backend`), milestones e releases
+### Integrações — visão geral
+| Desktop | Mobile |
+|---------|--------|
+| ![Integrações Desktop](./docs/screenshots/integracoes-visao-geral-desktop.jpg) | ![Integrações Mobile](./docs/screenshots/integracoes-visao-geral-mobile.jpg) |
 
-## Rodando localmente
+### Cotações
+| Desktop | Mobile |
+|---------|--------|
+| ![Cotações Desktop](./docs/screenshots/integracoes-cotacoes-desktop.jpg) | ![Cotações Mobile](./docs/screenshots/integracoes-cotacoes-mobile.jpg) |
+
+> **Baselines:** 12 screenshots (6 telas × desktop/mobile) versionadas em `docs/screenshots/`, geradas por `e2e/screenshots.spec.ts` (Playwright), já autenticadas no login demo. Regerar com `npm run e2e:screenshots`.
+
+---
+
+## Documentação
+
+| Arquivo | Descrição |
+|---------|-----------|
+| [`docs/ledger-bank-case.md`](./docs/ledger-bank-case.md) | Case study: contexto, desafio, solução, métricas e "o que aprendi" |
+| [`docs/a11y/relatorio-axe.json`](./docs/a11y/relatorio-axe.json) | Relatório de acessibilidade (axe) das 8 telas |
+| [`docs/clarity-integracao.md`](./docs/clarity-integracao.md) | Integração do Microsoft Clarity (mapa de calor) |
+| [`docs/manter-online.md`](./docs/manter-online.md) | Estratégia zero-standby (custo zero) |
+
+---
+
+## Setup Rápido
 
 ```bash
-npm install
-npm start            # ng serve
-npm test             # unitário (Vitest)
-npm run test:ci      # unitário em modo CI (coverage)
-npm run e2e          # Playwright (local)
-npm run e2e:ci       # Playwright (CI)
-npm run build        # ng build
-npm run analyze      # source-map-explorer (análise de bundle)
+npm install          # instala dependências
+npm start            # ng serve → http://localhost:4200
 ```
 
-## Ambiente (Supabase)
+O app funciona **sem backend**: sem credenciais Supabase ele sobe em **modo demonstração**,
+com um seed local de ~40 transações ancoradas em "hoje". O botão **"Entrar como usuário demo"**
+na tela de login dá acesso imediato ao dashboard.
 
-Variáveis em `.env` (nunca commitadas). `scripts/gerar-ambiente.mjs` transforma
-`VITE_*` em `src/environments/ambiente.local.ts` no `prestart`/`prebuild`/`pretest`
-— o arquivo gerado é gitignored, então **nenhuma chave real entra no git**.
+---
 
+## Comandos Principais
+
+| Comando | Descrição |
+|---------|-----------|
+| `npm start` | Servidor de desenvolvimento (`ng serve`) |
+| `npm run build` | Build de produção (`ng build`) |
+| `npm run lint` | ESLint + angular-eslint |
+| `npm test` | Testes unitários (Vitest, watch) |
+| `npm run test:ci` | Testes unitários + cobertura (CI) |
+| `npm run e2e` | Playwright (smoke + integrações + axe + screenshots) |
+| `npm run e2e:smoke` | Somente o smoke E2E (navegação, login demo, tema) |
+| `npm run e2e:a11y` | Varredura de acessibilidade (gera relatório axe) |
+| `npm run e2e:screenshots` | Regenera os prints do README |
+| `npm run analyze` | Análise de bundle (`ng build --stats-json`) |
+
+---
+
+## Telas Implementadas
+
+| Tela | Rota | Conteúdo |
+|------|------|----------|
+| Login | `/login` | Formulário por template + **login demo**; erro com `role="alert"` |
+| Dashboard | `/dashboard` | Saldo consolidado, cards de conta, gráfico de fluxo de caixa (ECharts) |
+| Transações | `/transacoes` | Tabela com busca por descrição e paginação acessível (`aria-current`) |
+| Investimentos | `/investimentos` | Posições, filtro por classe e série histórica por período |
+| Cotações | `/cotacoes` | Busca de ticker (BrAPI), maiores altas/quedas, origem do dado explícita |
+| Configurações | `/configuracoes` | Tema claro/escuro, moeda de exibição, exportação CSV |
+| Detalhe de conta | `/conta/:id` | Extrato agrupado por dia + resumo da conta |
+| Integrações | `/integracoes` | Hub em **quadros (estilo monday)** com 5 abas lazy |
+
+---
+
+## Qualidade & Performance
+
+| Métrica | Resultado |
+|---------|-----------|
+| **Unit tests (Vitest)** | 176/176 passando (22 arquivos) |
+| **Cobertura** | 94,1% statements · 84,9% branches · 95,1% lines |
+| **E2E (Playwright)** | 41/41 passando (smoke, integrações, axe, screenshots) |
+| **Acessibilidade (axe)** | 0 violações graves/críticas nas 8 telas |
+| **Lighthouse** | Performance **91** · A11y **100** · Best Practices **100** · SEO **100** |
+| **ESLint** | 0 erros · 0 warnings |
+| **Bundle inicial** | 308 kB (≈84 kB transfer) |
+| **Responsivo** | mobile (390) / desktop (1440) |
+
+> O orçamento de bundle em `angular.json` (350 kB warning / 450 kB erro) foi escolhido **a partir do tamanho real medido** — um limite abaixo do baseline do Angular só gera ruído no CI.
+
+---
+
+## Acessibilidade
+
+Varredura automatizada com `@axe-core/playwright` (tags WCAG 2.0/2.1 A+AA) nas **8 telas** — **zero violações** graves ou críticas.
+
+- Landmark `<main>` explícito e hierarquia de títulos coerente (`h1` único por tela).
+- Gráficos com rótulo acessível (`aria-label`), tabelas com `caption`/`th scoped` e paginação com `aria-current`.
+- Tema claro/escuro com contraste verificado nos dois modos; foco visível preservado.
+- Relatório versionado em [`docs/a11y/relatorio-axe.json`](./docs/a11y/relatorio-axe.json). Reproduzir: `npm run e2e:a11y`.
+
+---
+
+## Design — decisão e intenção
+
+> Cada escolha abaixo tem um "para quê" — nada é decorativo solto.
+
+### Conceito
+
+**Ledger** é um app fictício de finanças pessoais. O foco é a leitura rápida de números: saldo, fluxo e extrato em uma hierarquia que sobrevive a dados densos — sem "dashboard de blog". Escuro por padrão, contraste alto nos números.
+
+### Tokens semânticos em `src/styles.css`
+
+A paleta troca por **classe** (`.dark` no `<html>`), não por `prefers-color-scheme` — é o que permite o toggle manual persistido em `localStorage`.
+
+```css
+@theme  { --color-surface: var(--surface); ... }  /* gera as utilitárias */
+:root  { --surface: #ffffff; }                    /* claro  */
+.dark  { --surface: #14141b; }                    /* escuro */
 ```
-VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
-VITE_ROLE=demo
-```
 
-Dados usados: profiles (user/viewer) + accounts + transactions
+Um script inline no `index.html` aplica a classe **antes da primeira pintura** (sem flash de tema). O ECharts desenha em canvas e não herda CSS: `chart-theme.ts` lê os mesmos tokens com `getComputedStyle` e o `Chart` reaplica a série quando o tema muda.
 
-**Modo demo**: sem `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` o app sobe com um
-seed local (~40 transações ancoradas em "hoje") e nunca quebra por falta de
-credencial. Ver [`supabase/migrations/`](./supabase/migrations) para o schema e as
-policies de RLS.
+### Hub de Integrações (quadros no estilo monday)
 
-## Hub de Integrações (quadros no estilo monday)
-
-A engrenagem no shell abre `/integracoes`, que não é um formulário de configurações
-e sim um **conjunto de quadros**, cada um lazy e independente:
+A engrenagem no shell abre `/integracoes`, que não é um formulário de configurações e sim um **conjunto de quadros**, cada um lazy e com estado próprio:
 
 | Aba | Rota | O que resolve |
 |---|---|---|
@@ -75,211 +166,120 @@ e sim um **conjunto de quadros**, cada um lazy e independente:
 | Conexões | `/integracoes/conexoes` | quem está ligado, o que exige login, o que vem do ambiente |
 | Configurações | `/integracoes/configuracoes` | tema, moeda, exportação CSV, atalhos |
 
-O padrão é o do monday: navegação por abas no topo, cada quadro com o seu próprio
-estado. A pasta `features/integrations/` tem um componente por quadro e a rota pai
-só cuida das abas + `<router-outlet>`.
+A pasta `features/integrations/` tem um componente por quadro e a rota pai só cuida das abas + `<router-outlet>`.
 
 ### Cotações: BrAPI
 
-Escolhi a [BrAPI](https://brapi.dev) depois de medir o comportamento real da API
-(`curl` + headers), não pela documentação. Três restrições moldaram o
-`MarketService`:
+Escolhi a [BrAPI](https://brapi.dev) depois de **medir o comportamento real** da API (`curl` + headers), não pela documentação. Três restrições moldaram o `MarketService`:
 
-1. **Um ticker por requisição** sem token — lote (`?tickers=PETR4,VALE3`) responde
-   `MISSING_TOKEN`. E `x-brapi-concurrency-limit: 1`: disparar seis em paralelo toma
-   429 na cara do usuário. Por isso o serviço tem **fila estritamente serial** com
-   350 ms de espaçamento entre chamadas.
-2. **20 requisições por minuto** no plano anônimo. Daí o cache de 60 s e o
-   espaçador: abrir a tela doze vezes não pode virar doze requisições.
+1. **Um ticker por requisição** sem token — lote (`?tickers=...`) responde `MISSING_TOKEN`, e o header `x-brapi-concurrency-limit: 1` derruba chamadas paralelas em 429. Por isso há **fila estritamente serial** com 350 ms entre chamadas.
+2. **20 requisições/minuto** no plano anônimo — daí o cache de 60 s.
 3. **CORS liberado** (`access-control-allow-origin: *`) — nenhum proxy necessário.
 
-```bash
-VITE_BRAPI_BASE_URL=https://brapi.dev/api
-VITE_BRAPI_TOKEN=            # opcional: libera lote e mais volume
-```
+**O app nunca mostra número inventado como se fosse de mercado.** Toda `QuoteResult` carrega `origin: 'ao_vivo' | 'cache' | 'demo'`, exibido como tag. Quando a chamada falha, o serviço cai num seed determinístico (o mesmo ticker sempre gera o mesmo preço) e a tela avisa que está em modo demonstração.
 
-**O app nunca mostra número inventado como se fosse de mercado.** Toda
-`QuoteResult` carrega `origin: 'ao_vivo' | 'cache' | 'demo'`, exibido como tag na
-tabela. Quando a chamada falha (offline, 429, ticker inexistente), o serviço cai num
-seed determinístico — o mesmo ticker sempre gera o mesmo preço, então a tela não
-"pisca" de valor a cada render — e a visão geral mostra um aviso explícito de modo
-demonstração.
-
-O seed de carteira (`HOLDINGS_DEMO` em `portfolio.service.ts`) é o motivo de o
-`origin` existir: seis posições × (cotação + série) = doze requisições por carga,
-perto do teto anônimo. É por isso que a tela de investimentos não recarrega as
-séries a cada montagem.
+---
 
 ## Arquitetura
 
-```
+```text
 src/app/
 ├─ core/                 # singletons: sem UI, sem rota
 │  ├─ echarts.ts         # registro modular do ECharts (linha, barra, rosca)
 │  ├─ guards/            # authGuard
 │  ├─ services/          # AuthService · LedgerDataService · ThemeService
 │  │                     # MarketService · PortfolioService · IntegrationsService
-│  │                     # supabase-client
 │  ├─ utils/             # format (BRL, datas, filtro, CSV, mercado) · chart-theme
 │  └─ models.ts
 ├─ features/             # lazy por rota, uma pasta por página
 │  ├─ login/  dashboard/  transactions/  account/
 │  └─ integrations/      # layout + 5 quadros
 └─ shared/components/    # shell · balance-card · chart · transaction-list · pagination
+e2e/                     # Playwright: smoke, integrações, acessibilidade (axe), screenshots
+docs/                    # case study, a11y, screenshots, runbooks
+.github/workflows/       # CI (lint→build→unit→e2e→lighthouse) + Deploy (GitHub Pages)
 ```
 
-- **Guard no pai das rotas protegidas** (`canActivate` em `path: ''`): uma regra
-  só, e `login` fica fora dela.
-- **`withComponentInputBinding()`** liga o `:id` da rota direto no `input()` do
-  `AccountDetailPage` — sem subscribe manual de `ActivatedRoute`.
-- **Rollup não sabe tree-shakar o SDK do Supabase**; com import estático ele entra
-  inteiro no bundle inicial (≈870 kB de fonte: `auth-js`, `postgrest-js`,
-  `realtime-js`, `storage-js`, `phoenix`). Como o modo demo não usa backend, o
-  `supabase-client.ts` faz `import()` dinâmico: **o SDK vira um chunk sob demanda**.
-- **`IntegrationsService` separa "conectado" de "conectável".** O Supabase tem
-  `doAmbiente: true`: o estado vem de `VITE_SUPABASE_URL`, então a tela mostra o
-  status e **não** oferece botão — antes ele aparecia e `alternar()` era no-op, ou
-  seja, um botão que não fazia nada. As demais conexões persistem em `localStorage`.
+- **Guard no pai das rotas protegidas** (`canActivate` em `path: ''`): uma regra só, e `login` fica fora dela.
+- **`withComponentInputBinding()`** liga o `:id` da rota direto no `input()` do `AccountDetailPage` — sem subscribe manual de `ActivatedRoute`.
+- **Supabase lazy**: o SDK não é tree-shakável, então `supabase-client.ts` faz `import()` dinâmico — só baixa quando há credencial. O modo demo não usa backend.
 
-## Bundle
-
-| | Antes | Depois | Com integrações |
-|---|---|---|---|
-| Bundle inicial (raw) | 514 kB | **298 kB** | **307 kB** |
-| Bundle inicial (transfer) | 126 kB | **80 kB** | **83 kB** |
-| Chunk do ECharts | 1,05 MB | **476 kB** | **524 kB** |
-
-Duas mudanças, ambas por decisão e não por acidente:
-
-1. **ECharts modular** — `echarts/core` com registro de `LineChart`, `BarChart`,
-   `PieChart`, `GridComponent`, `TooltipComponent`, `LegendComponent` e
-   `CanvasRenderer`. `import { init } from 'echarts'` traz a lib inteira; o registro
-   mínimo corta o chunk pela metade.
-2. **Supabase lazy** — o SDK só é baixado quando há credencial configurada.
-
-Os +9 kB iniciais são o `BarChart`/`PieChart`/`LegendComponent` do registro do ECharts
-— que moram no **chunk lazy** de 524 kB, não no first load. Os quadros de
-investimentos, cotações e conexões são 7–10 kB cada, baixados só quando abertos.
-
-Orçamento em `angular.json`: 350 kB (warning) / 450 kB (erro) no initial, 8/16 kB
-por estilo de componente. Escolhi números **a partir do tamanho real medido** — um
-orçamento irreal (menor que o baseline do Angular) só gera ruído no CI.
-
-## Temas (claro/escuro)
-
-Tokens semânticos em `src/styles.css`, com a paleta trocando por seletor de
-classe (`.dark` no `<html>`), não por `prefers-color-scheme` — é o que permite o
-toggle manual que a spec pede:
-
-```css
-@theme  { --color-surface: var(--surface); ... }  /* gera as utilitárias */
-:root  { --surface: #ffffff; }                    /* claro  */
-.dark  { --surface: #14141b; }                    /* escuro */
-```
-
-O ECharts desenha em canvas e **não herda CSS**, então `chart-theme.ts` lê os
-mesmos tokens com `getComputedStyle` e o `Chart` reaplica a série quando o tema
-muda. Um script inline no `index.html` aplica a classe antes da primeira pintura
-(sem flash de tema).
+---
 
 ## Decisão de teste: Vitest
 
-Vitest em vez de Karma por três motivos concretos: o builder `@angular/build:unit-test`
-do Angular 22 já roda Vitest de forma nativa (zero adapter, `ng test` e a CI usam o
-mesmo caminho); `vi.mock` intercepta o `import()` dinâmico do Supabase, o que
-deixa o ramo "com credenciais" testável de verdade; e a saída é compatível com o
-`@vitest/coverage-v8` já usado. A suíte roda em ~1,6 s.
+Vitest em vez de Karma por três motivos concretos: o builder `@angular/build:unit-test` do Angular 22 já roda Vitest nativamente (zero adapter — `ng test` e a CI usam o mesmo caminho); `vi.mock` intercepta o `import()` dinâmico do Supabase, deixando o ramo "com credenciais" testável de verdade; e a saída é compatível com o `@vitest/coverage-v8` já usado.
 
-> Cada repo do roadmap alterna Karma/Vitest de propósito: agnóstico de ferramenta,
-> escolha por contexto.
+> Cada repo do roadmap alterna Karma/Vitest de propósito: agnóstico de ferramenta, escolha por contexto.
 
-## Checklist DoD
+---
 
-- [x] Build/lint/typecheck limpos
-- [x] Unit (Vitest) — **176 testes** em 22 arquivos, cobertura **94,5% stmts / 95,4% linhas**
-- [x] E2E Playwright (28) + axe sem violações serious/critical
-- [x] Cotações reais via BrAPI com fila serial, cache e origem do dado explícita
-- [ ] Lighthouse ≥ 90 (fica para a Semana 10, na trilha de performance do roadmap)
-- [x] Responsivo (shell com sidebar em `lg`, header compacto abaixo)
-- [x] README com decisão de teste e "o que aprendi"
-- [x] Supabase configurado (schema + RLS em `supabase/migrations`, com fallback demo)
-- [ ] PR revisado + merged + release por milestone
+## Stack
 
-## O que aprendi
+| Responsabilidade | Tecnologia |
+|------------------|------------|
+| Framework | Angular 22 (standalone, signals, zoneless, OnPush) |
+| Linguagem | TypeScript |
+| Estilização | Tailwind CSS 4 |
+| Gráficos | ECharts (registro modular) |
+| Backend/Dados | Supabase (Postgres + Auth + RLS) com fallback demo · BrAPI (cotações) |
+| Testes | Vitest (unit) · Playwright + axe (E2E/a11y) |
+| Qualidade | ESLint + angular-eslint · Lighthouse CI |
+| Deploy | GitHub Pages (site estático) |
 
-**Bundle não é "rodar `npm run build` e ver o número".** Os 514 kB iniciais eram
-quase todos `@supabase/supabase-js`, e o culpado parecia óbvio demais para ser
-interessante: o app rodava 100% em modo demo. A correção não foi "remover o
-Supabase" (ele é o objetivo do projeto) e sim perceber que **tree-shaking não
-alcança o SDK inteiro**, então a pergunta certa é *quando* o app precisa dele — e a
-resposta é "só com credencial". Isso virou `import()` dinâmico, 216 kB a menos no
-first load.
+---
 
-**Tokens de tema fora do `@theme` existem mas não fazem nada.** O dark/light
-"funcionava": as classes apareciam nos templates e a página renderizava. Mas
-`bg-surface` e `text-mute` nunca foram geradas, porque no Tailwind v4 utilitárias
-só nascem de tokens declarados em `@theme` — nada herdava o CSS, o texto ficava
-branco sobre branco, e o botão de primária ficava transparente. **Nem os testes
-unitários pegaram isso**: eles não verificam pixels. Só o axe no E2E, reclamando de
-contraste `1.09:1` de um botão "Exportar CSV" que estava sem fundo, expôs o
-problema. A lição é sobre o *tipo* de teste: a11y automatizada é um detector de
-regressão visual melhor do que a maioria dos devs assume.
+## Branches & Workflow Git
 
-**Duas falhas que só o tempo/fuso revelam.** `dayKey` truncava com
-`toISOString().slice(0,10)`, ou seja, em **UTC** — e reconverter essa string
-novamente para data local voltava um dia em fusos negativos (UTC-3 no Brasil). O
-extrato agrupava "hoje" como "ontem" e o eixo do gráfico saía um dia adiantado. A
-assinatura está em `format.spec.ts`/`ledger-data.service.spec.ts` com invariantes
-que valem em qualquer fuso, não com uma data fixa. E `takeUntilDestroyed()` sem
-`DestroyRef` explícito lançou `NG0203` assim que o handler foi chamado fora do
-contexto de injeção — o template às vezes provide, o teste não, e isso vira bug
-"só em produção" do tipo oposto.
+```text
+main      → produção (build estático; push dispara deploy no GitHub Pages)
+homolog   → validação/release de PRs (staging)
+develop   → integração diária (merges das feat/*)
+feature   → feat/<assunto> + PR para develop
+```
 
-**`toHaveClass` do Playwright é mais um professor que o build.** A duplicação de
-"Saldo consolidado" (sidebar + dashboard) não era bug de UI, era um teste
-escrito contra uma versão anterior da tela. O conserto certo foi tornar o landmark
-`<main>` explícito e escopar o seletor — não afrouxar a asserção.
+- **Commits:** `feat:`, `fix:`, `test:`, `docs:`, `design:`, `ops:`, `backend:` (Conventional Commits)
+- **PRs:** via pull request template; revisados e mergeados por milestone
+- **main:** protegida — merge somente via PR
+- Rastreabilidade com issues, labels (`feat/test/design/ops/backend`) e milestones
 
-**Limitação de API se descobre no `curl`, não na documentação.** A BrAPI tem CORS
-liberado e um plano anônimo utilizável, mas o header `x-brapi-concurrency-limit: 1`
-e o `MISSING_TOKEN` em lote não estão na página inicial. Fui medir antes de
-escrever o serviço, e foi isso que evitou o erro óbvio: `Promise.all` dos seis
-tickers, que no happy path do mock passa e em produção vira 429 em loop. O teste
-que vale não é "a cotação volta certa", é **"nunca houve duas requisições ao mesmo
-tempo"** — está em `market.service.spec.ts` medindo concorrência máxima.
+---
 
-**Fallback silencioso é pior que erro barulhento.** O seed determinístico
-(`pseudoRandom` semeado pelo ticker) resolve o caso offline, mas cria uma armadilha:
-dados que parecem reais. Por isso cada resposta carrega `origin` e a tela diz se está
-em modo demonstração. O mesmo principle apareceu no botão do Supabase: a tela
-mostrava "Conectar", o serviço aceitava a chamada e não fazia nada. Foi o E2E
-(`conectar-supabase` com count 0) que expôs — **um botão que não faz nada é bug, não
-detalhe de UI**, e a correção foi no modelo (`doAmbiente`), não no template.
+## Bots (estação local + CI)
 
-**`busca.set('')` não limpa um `<input>`.** O binding `[value]` só escreve no DOM
-quando o valor que o Angular conhece muda, e eventos de `input` do usuário não
-passam pela detecção. Depois de consultar um ticker o campo continuava com o texto
-digitado — a tela "funcionava", o estado não. A correção foi limpar pela referência
-do template (`#tickerInput`), e o tipo do `Event` no handler deixou de ser `Event`
-para receber o elemento.
+Os bots vivem em `bots/` e rodam localmente e no GitHub Actions.
 
-**Vitest roda em `ng test`, não em `npx vitest`.** Um `vitest.config.ts` com
-`environment: 'node'` no repo faz `npx vitest run` reprovar 59 testes com
-`localStorage is not defined` — mas o runner real é o builder
-`@angular/build:unit-test`, que monta o ambiente de browser sozinho. Config de
-teste morta é pior que config ausente: ela ensina o comando errado. Apaguei o
-arquivo.
+| Bot | O que faz | Como roda localmente |
+|-----|-----------|----------------------|
+| **Humano** (`bots/humano/navegacao-humana.mjs`) | Navega com comportamento de pessoa real (cliques com atraso, scroll gradual, hesitação). Detecta travamento e navegação quebrada. | `BOT_URL=http://localhost:4200 node bots/humano/navegacao-humana.mjs` |
+| **Analisador de erros** (`bots/analise-erros/analisador.mjs`) | Lê logs de build/e2e/CI, classifica por severidade e aponta padrões repetidos. | `node bots/analise-erros/analisador.mjs` |
+| **CI + Lighthouse** | `npm ci` → lint → build → Vitest (coverage) → Playwright + axe → Lighthouse. | `npm run build` + `npx lhci autorun` |
 
-## Screenshots
-
-_(capturar em produção: login, dashboard nos dois temas, transações, extrato,
-hub de integrações, quadro de cotações)_
+---
 
 ## Microsoft Clarity (mapa de calor)
 
-Integração documentada em [`docs/clarity-integracao.md`](./docs/clarity-integracao.md).
-Snippet só é ativado quando a variável `CLARITY_PROJECT_ID` estiver definida.
+Integração **condicional**: o snippet só é ativado quando a variável `CLARITY_PROJECT_ID` estiver definida. Grava mapa de calor, scroll, cliques e sessões reais. Ver [`docs/clarity-integracao.md`](./docs/clarity-integracao.md).
 
-## Permanência online
+---
 
-Estratégia zero-standby documentada em [`docs/manter-online.md`](./docs/manter-online.md).
+## Deploy
+
+- **GitHub Pages** (projeto público): `https://zecki1.github.io/angular-ledger-bank/`
+  Workflow [`.github/workflows/deploy-pages.yaml`](./.github/workflows/deploy-pages.yaml) — build com `--base-href=/angular-ledger-bank/` + fallback SPA (`index.html` → `404.html`).
+- **Política do workspace:** projetos públicos → GitHub Pages; projetos privados → Vercel.
+- Estratégia zero-standby documentada em [`docs/manter-online.md`](./docs/manter-online.md).
+
+---
+
+## Links Úteis
+
+- **Produção (GitHub Pages):** https://zecki1.github.io/angular-ledger-bank/
+- **Repositório:** https://github.com/zecki1/angular-ledger-bank
+- **Roadmap do portfólio:** `planejamento-projetos.md` (Semana 3 — Ledger)
+
+---
+
+## Licença
+
+MIT — ver [`LICENSE`](./LICENSE).

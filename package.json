@@ -13,6 +13,9 @@
     "test:ci": "ng test --watch=false --coverage",
     "e2e": "playwright test",
     "e2e:ci": "playwright test",
+    "e2e:smoke": "playwright test e2e/smoke.spec.ts",
+    "e2e:a11y": "playwright test e2e/acessibilidade.spec.ts",
+    "e2e:screenshots": "playwright test e2e/screenshots.spec.ts",
     "analyze": "ng build --stats-json"
   },
   "private": true,
