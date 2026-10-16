@@ -19,14 +19,14 @@ const SEED: IntegracaoSeed[] = [
     detalhe: 'Banco de dados do projeto compartilhado angular-portfolio.',
   },
   {
-    id: 'brapi',
-    nome: 'BrAPI',
-    descricao: 'Cotações de ativos da B3 em tempo quase real.',
+    id: 'cotacoes',
+    nome: 'Cotações B3',
+    descricao: 'Cotações e séries de ações e FIIs da B3.',
     icone: '↗',
     exigeLogin: false,
     exigeSupabase: false,
     doAmbiente: false,
-    detalhe: 'brapi.dev — 20 req/min sem token. Token amplia o limite.',
+    detalhe: 'Servida pela API Java do banco — nenhuma chave de terceiro no navegador.',
   },
   {
     id: 'b3',

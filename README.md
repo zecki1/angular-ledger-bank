@@ -105,7 +105,7 @@ na tela de login dá acesso imediato ao dashboard.
 | Dashboard | `/dashboard` | Saldo consolidado, cards de conta, gráfico de fluxo de caixa (ECharts) |
 | Transações | `/transacoes` | Tabela com busca por descrição e paginação acessível (`aria-current`) |
 | Investimentos | `/investimentos` | Posições, filtro por classe e série histórica por período |
-| Cotações | `/cotacoes` | Busca de ticker (BrAPI), maiores altas/quedas, origem do dado explícita |
+| Cotações | `/cotacoes` | Busca de ticker (via API Java), maiores altas/quedas, origem do dado explícita |
 | Configurações | `/configuracoes` | Tema claro/escuro, moeda de exibição, exportação CSV |
 | Detalhe de conta | `/conta/:id` | Extrato agrupado por dia + resumo da conta |
 | Integrações | `/integracoes` | Hub em **quadros (estilo monday)** com 5 abas lazy |
@@ -174,15 +174,15 @@ A engrenagem no shell abre `/integracoes`, que não é um formulário de configu
 
 A pasta `features/integrations/` tem um componente por quadro e a rota pai só cuida das abas + `<router-outlet>`.
 
-### Cotações: BrAPI
+### Cotações: API Java
 
-Escolhi a [BrAPI](https://brapi.dev) depois de **medir o comportamento real** da API (`curl` + headers), não pela documentação. Três restrições moldaram o `MarketService`:
+O navegador **não** chama fonte externa de cotação. Quem fala com o mercado é a API Java do banco (`/api/mercado/cotacoes` e `/api/mercado/series`), e o `MarketService` só consome esses dois endpoints:
 
-1. **Um ticker por requisição** sem token — lote (`?tickers=...`) responde `MISSING_TOKEN`, e o header `x-brapi-concurrency-limit: 1` derruba chamadas paralelas em 429. Por isso há **fila estritamente serial** com 350 ms entre chamadas.
-2. **20 requisições/minuto** no plano anônimo — daí o cache de 60 s.
-3. **CORS liberado** (`access-control-allow-origin: *`) — nenhum proxy necessário.
+1. **Sem token no frontend** — nenhuma credencial de terceiro chega ao navegador; a integração e a chave ficam no servidor.
+2. **Sem problema de CORS** — o Java resolve a origem, o app só fala com a própria API.
+3. **Lote de verdade** — o Java busca vários tickers numa requisição só e mantém cache de 60 s; não existe mais fila serial nem o limite de 20 req/min no cliente.
 
-**O app nunca mostra número inventado como se fosse de mercado.** Toda `QuoteResult` carrega `origin: 'ao_vivo' | 'cache' | 'demo'`, exibido como tag. Quando a chamada falha, o serviço cai num seed determinístico (o mesmo ticker sempre gera o mesmo preço) e a tela avisa que está em modo demonstração.
+**O app nunca mostra número inventado como se fosse de mercado.** Toda `QuoteResult` carrega `origin: 'ao_vivo' | 'cache' | 'demo'`, exibido como tag. Quando a API responde `success:false` ou a rede cai, o serviço usa um seed determinístico (o mesmo ticker sempre gera o mesmo preço) e a tela avisa que está em modo demonstração.
 
 ---
 
@@ -228,7 +228,7 @@ Vitest em vez de Karma por três motivos concretos: o builder `@angular/build:un
 | Linguagem | TypeScript |
 | Estilização | Tailwind CSS 4 |
 | Gráficos | ECharts (registro modular) |
-| Backend/Dados | Supabase (Postgres + Auth + RLS) com fallback demo · BrAPI (cotações) |
+| Backend/Dados | Supabase (Postgres + Auth + RLS) com fallback demo · API Java para cotações |
 | Testes | Vitest (unit) · Playwright + axe (E2E/a11y) |
 | Qualidade | ESLint + angular-eslint · Lighthouse CI |
 | Deploy | GitHub Pages (site estático) |

@@ -7,7 +7,7 @@ provar domínio de **apresentação de dados densos** — saldo, timeline de tra
 mode — com UX de produto, não de demo.
 
 Stack: Angular 22 (standalone, signals, zoneless, OnPush) + Tailwind 4 + ECharts, Supabase
-(Postgres + Auth + RLS) com **fallback demo** e a **BrAPI** para cotações reais.
+(Postgres + Auth + RLS) com **fallback demo** e uma **API Java (Spring Boot)** para as cotações.
 
 ## Desafio
 
@@ -22,9 +22,10 @@ Stack: Angular 22 (standalone, signals, zoneless, OnPush) + Tailwind 4 + ECharts
   agrupa por dia e o gráfico respeita o fuso local (`dayKey` em data local, não UTC).
 - **Hub de Integrações em quadros (estilo monday):** `/integracoes` é um conjunto de 5 quadros lazy,
   cada um com estado próprio (visão geral, investimentos, cotações, conexões, configurações).
-- **Cotações com honestidade de origem:** o `MarketService` usa fila **serial** (350 ms) por causa do
-  `x-brapi-concurrency-limit: 1`, cache de 60 s para o teto de 20 req/min e queda para um **seed
-  determinístico** quando a API falha. Toda resposta carrega `origin: 'ao_vivo' | 'cache' | 'demo'`,
+- **Cotações com honestidade de origem:** o navegador não fala com fonte externa — o `MarketService`
+  consome a API Java (`/api/mercado/cotacoes` e `/api/mercado/series`), que busca os tickers em lote,
+  mantém cache de 60 s e resolve CORS/token no servidor. Quando a API falha, o serviço cai num **seed
+  determinístico**. Toda resposta carrega `origin: 'ao_vivo' | 'cache' | 'demo'`,
   exibida como tag — nenhum número inventado passa por mercado real.
 - **Tema por classe:** tokens semânticos em `styles.css` com a paleta trocando por `.dark` no `<html>`
   (não `prefers-color-scheme`), script inline antes da primeira pintura e `chart-theme.ts` relendo os
@@ -62,9 +63,10 @@ Stack: Angular 22 (standalone, signals, zoneless, OnPush) + Tailwind 4 + ECharts
 - **Duas falhas que só o tempo/fuso revelam.** `dayKey` truncava com `toISOString().slice(0,10)` (UTC) e
   a reconversão para data local voltava um dia em UTC-3: o extrato agrupava "hoje" como "ontem". A
   assinatura está em `format.spec.ts` com invariantes que valem em qualquer fuso, não com data fixa.
-- **Limitação de API se descobre no `curl`, não na documentação.** O `x-brapi-concurrency-limit: 1` e o
-  `MISSING_TOKEN` em lote não estão na página inicial da BrAPI. O teste que vale não é "a cotação volta
-  certa", é **"nunca houve duas requisições ao mesmo tempo"** (`market.service.spec.ts`).
+- **Fronteira de integração é decisão de arquitetura, não detalhe.** Colocar a fonte de cotação atrás
+  da API Java tirou CORS, token e limite de requisições do cliente — o navegador só fala com a própria
+  API. O `MarketService` passou a testar o **envelope** (`success`/`data`) e o fallback, não o formato
+  de um provedor de terceiro.
 - **Fallback silencioso é pior que erro barulhento.** O seed determinístico resolve o offline, mas cria
   dados que parecem reais. Por isso cada resposta carrega `origin` e a tela diz que está em modo
   demonstração. O mesmo apareceu num botão "Conectar Supabase" que não fazia nada: o conserto foi no

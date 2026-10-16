@@ -7,7 +7,7 @@ const demoLogin = async (page: import('@playwright/test').Page) => {
   await expect(page).toHaveURL(/\/dashboard/);
 };
 
-/** A BrAPI é chamada de verdade; sem rede o app cai no seed, então a espera é larga. */
+/** As cotações vêm da API Java; sem rede o app cai no seed, então a espera é larga. */
 const LENTO = { timeout: 25_000 };
 
 test.describe('hub de integrações', () => {
@@ -164,11 +164,11 @@ test.describe('quadro de conexões', () => {
   test('conectar move a integração para a lista de conectadas', async ({ page }) => {
     await expect(page.getByTestId('total-conectadas')).toHaveText('0');
 
-    await page.getByTestId('conectar-brapi').click();
+    await page.getByTestId('conectar-cotacoes').click();
 
     await expect(page.getByTestId('total-conectadas')).toHaveText('1');
     await expect(page.getByRole('heading', { name: 'Conectadas' })).toBeVisible();
-    await expect(page.getByText('BrAPI').first()).toBeVisible();
+    await expect(page.getByText('Cotações B3').first()).toBeVisible();
   });
 
   test('o estado da conexão sobrevive ao recarregamento', async ({ page }) => {

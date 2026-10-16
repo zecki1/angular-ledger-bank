@@ -6,12 +6,9 @@
         <p class="mt-1 text-sm text-mute">
           Fonte:
           @if (algumAoVivo()) {
-            <span style="color: var(--color-up)">BrAPI ao vivo</span>
+            <span style="color: var(--color-up)">API do banco ao vivo</span>
           } @else {
             <span style="color: var(--color-down)">modo demonstração</span>
-          }
-          @if (!temToken) {
-            — sem token: 20 consultas/min, uma por requisição
           }
         </p>
       </div>
