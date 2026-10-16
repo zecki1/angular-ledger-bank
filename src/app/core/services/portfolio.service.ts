@@ -26,7 +26,7 @@ export const HOLDINGS_DEMO: Holding[] = [
 
 /** Pesos usados para colorir a rosca de alocação sem trazer uma paleta nova. */
 export const CLASS_COLOR: Record<AssetClass, string> = {
-  acao: '#8b5cf6',
+  acao: '#cc092f',
   fii: '#22d3ee',
   renda_fixa: '#34d399',
   cripto: '#fbbf24',

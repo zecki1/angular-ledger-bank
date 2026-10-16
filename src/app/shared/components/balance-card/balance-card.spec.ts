@@ -11,7 +11,7 @@ const account: Account = {
   type: 'conta_corrente',
   balance: 8432.7,
   currency: 'BRL',
-  color: '#8b5cf6',
+  color: '#333b8f',
 };
 
 const spaces = (s: string): string => s.replace(/\u00a0/g, ' ');

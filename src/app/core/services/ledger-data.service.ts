@@ -113,7 +113,7 @@ export class LedgerDataService {
         type: r['type'] as Account['type'],
         balance: Number(r['balance'] ?? 0),
         currency: String(r['currency'] ?? 'BRL'),
-        color: '#8b5cf6',
+        color: '#333b8f',
       } satisfies Account;
     });
   }
