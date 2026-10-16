@@ -24,42 +24,42 @@
     "pagina": "transacoes",
     "url": "/transacoes",
     "violacoes": [],
-    "passes": 22,
+    "passes": 23,
     "graves": 0
   },
   {
     "pagina": "conta-extrato",
     "url": "/conta/acc-corrente",
     "violacoes": [],
-    "passes": 21,
+    "passes": 23,
     "graves": 0
   },
   {
     "pagina": "integracoes-visao-geral",
     "url": "/integracoes/visao-geral",
     "violacoes": [],
-    "passes": 26,
+    "passes": 27,
     "graves": 0
   },
   {
     "pagina": "integracoes-investimentos",
     "url": "/integracoes/investimentos",
     "violacoes": [],
-    "passes": 26,
+    "passes": 27,
     "graves": 0
   },
   {
     "pagina": "integracoes-cotacoes",
     "url": "/integracoes/cotacoes",
     "violacoes": [],
-    "passes": 28,
+    "passes": 29,
     "graves": 0
   },
   {
     "pagina": "integracoes-configuracoes",
     "url": "/integracoes/configuracoes",
     "violacoes": [],
-    "passes": 25,
+    "passes": 26,
     "graves": 0
   }
 ]

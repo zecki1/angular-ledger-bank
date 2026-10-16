@@ -1,16 +1,47 @@
-import { afterRenderEffect, Directive, effect, ElementRef, inject, Input, OnDestroy } from '@angular/core';
-import { animate, AnimationOptions } from '@motionone/dom';
+import { afterNextRender, Directive, ElementRef, inject, Input, OnDestroy } from '@angular/core';
+import { animate, AnimationOptionsWithOverrides, inView, MotionKeyframesDefinition } from '@motionone/dom';
+
+/**
+ * O input aceita keyframes e opções de reprodução no mesmo objeto (é o formato
+ * dos exemplos do Motion One). `animate()` espera os dois em argumentos
+ * separados, então o wrapper faz a separação em tempo de execução.
+ */
+type OpcoesMotion = AnimationOptionsWithOverrides & MotionKeyframesDefinition;
+
+/** Chaves que são opções de reprodução e não keyframes. */
+const CHAVES_REPRODUCAO = [
+  'duration',
+  'delay',
+  'endDelay',
+  'easing',
+  'offset',
+  'direction',
+  'repeat',
+  'autoplay',
+  'record',
+] as const;
 
 /**
  * Diretiva Angular mínima para Motion One (`@motionone/dom`).
  *
- * Usa change detection minimalista e roda efeitos apenas no cliente. Respeita
- * `prefers-reduced-motion`: Motion One já reduz/ignora animações nesse caso,
- * mas também podemos pular a inicialização quando desejado.
+ * Motivo: o pacote `@motionone/angular` nunca existiu no npm (ver
+ * `docs/decisions/2026-10-16-liquid-motion.md`); o core `@motionone/dom` é
+ * framework-agnostic, então este wrap de ~60 linhas o torna Angular-first:
+ * standalone, com inputs simples e integração com o ciclo de vida do Angular.
+ *
+ * Comportamento:
+ * - Anima quando o elemento entra no viewport (`inView` do Motion One), ou
+ *   imediatamente com `[appMotionNow]` (ex.: conteúdo de aba que já está visível).
+ * - **`prefers-reduced-motion: reduce` desliga a animação** — o Motion One não
+ *   trata disso sozinho, então a diretiva checa o matchMedia e mostra o
+ *   elemento no estado final (visível) sem animar.
+ * - O elemento começa com `opacity: 0` só enquanto a animação não roda; se a
+ *   animação falhar ou for pulada, um `finally` garante `opacity: 1` — nada
+ *   some da tela por causa de animação.
  *
  * Uso:
  * ```html
- * <div appMotion [appMotionIn]="{ opacity: [0,1], y: [8,0], duration: 0.25 }">
+ * <article [appMotion]="{ opacity: [0, 1], y: [10, 0], duration: 0.35, delay: i * 0.05 }">
  * ```
  */
 @Directive({
@@ -20,77 +51,75 @@ import { animate, AnimationOptions } from '@motionone/dom';
 export class MotionDirective implements OnDestroy {
   private readonly el = inject(ElementRef<HTMLElement>).nativeElement;
 
-  /** Opções para animação de entrada (aplicadas quando elemento entra). */
-  @Input('appMotionIn') inOptions?: AnimationOptions | AnimationOptions[];
+  /** Opções da animação (formato `animate()` do Motion One). */
+  @Input({ alias: 'appMotion' }) options?: OpcoesMotion | null;
 
-  /** Opções para animação de saída (executada antes de remoção). */
-  @Input('appMotionOut') outOptions?: AnimationOptions | AnimationOptions[];
+  /** Anima já na próxima renderização, sem esperar entrar no viewport. */
+  @Input() appMotionNow = false;
 
-  /** Se true, não anima (ignora). Útil p/ prefers-reduced-motion. */
-  @Input('appMotionDisabled') disabled = false;
-
-  /** Se true, anima já no primeiro render (sem esperar "enter"). */
-  @Input('appMotionImmediate') immediate = false;
-
-  /** Estado interno: já animou entrada? */
-  private entered = false;
+  private observerCleanup?: () => void;
+  private destruido = false;
 
   constructor() {
-    // Animação de entrada
-    effect(() => {
-      const opts = this.inOptions;
-      if (this.disabled || this.entered || !opts) return;
-      if (this.immediate || this.isInView()) {
-        void this.run(opts);
-        this.entered = true;
+    afterNextRender(() => {
+      if (this.destruido || !this.options) {
+        return;
       }
-    });
+      if (prefersReducedMotion()) {
+        // Sem animação: elemento já está visível por padrão no DOM.
+        return;
+      }
+      // Esconde enquanto não anima (só quando vamos animar de verdade).
+      this.el.style.opacity = '0';
 
-    // Observa quando o elemento aparece no viewport (lazy)
-    afterRenderEffect(() => {
-      if (this.disabled || this.entered || !this.inOptions) return;
-      const io = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((e) => {
-            if (e.isIntersecting) {
-              void this.run(this.inOptions!);
-              this.entered = true;
-              io.unobserve(this.el);
-            }
-          });
+      if (this.appMotionNow) {
+        void this.executar();
+        return;
+      }
+
+      this.observerCleanup = inView(
+        this.el,
+        () => {
+          void this.executar();
         },
-        { threshold: 0.05 }
+        { amount: 0.05 },
       );
-      io.observe(this.el);
-      return () => io.disconnect();
     });
   }
 
   ngOnDestroy(): void {
-    // noop
+    this.destruido = true;
+    this.observerCleanup?.();
+    this.el.style.opacity = '';
   }
 
-  /** Executa animação (entrada). Aceita array de keyframes/anim. */
-  private async run(opts: AnimationOptions | AnimationOptions[]): Promise<void> {
+  private async executar(): Promise<void> {
+    if (!this.options) {
+      return;
+    }
+
+    const keyframes: Record<string, unknown> = {};
+    const reproducao: Record<string, unknown> = {};
+    for (const [chave, valor] of Object.entries(this.options)) {
+      const destino = (CHAVES_REPRODUCAO as readonly string[]).includes(chave) ? reproducao : keyframes;
+      destino[chave] = valor;
+    }
+
     try {
-      if (Array.isArray(opts)) {
-        // anima em sequência? Motion One timeline faria melhor, mas array simples: roda primeira
-        await animate(this.el, opts[0]);
-        for (let i = 1; i < opts.length; i++) {
-          await animate(this.el, opts[i]);
-        }
-        return;
+      await animate(this.el, keyframes as MotionKeyframesDefinition, reproducao as AnimationOptionsWithOverrides);
+    } finally {
+      // Estado final visível mesmo se a animação falhar.
+      if (!this.destruido) {
+        this.el.style.opacity = '';
       }
-      await animate(this.el, opts);
-    } catch {
-      // Silencia falhas de animação (não bloqueia render)
     }
   }
+}
 
-  /** Heurística simples: considera visível se já está no viewport. */
-  private isInView(): boolean {
-    if (typeof window === 'undefined') return false;
-    const rect = this.el.getBoundingClientRect();
-    return rect.top < window.innerHeight && rect.bottom > 0;
-  }
+/**
+ * `true` quando o usuário pediu menos movimento. Checado a cada chamada para
+ * refletir troca de preferência sem reiniciar a página.
+ */
+export function prefersReducedMotion(): boolean {
+  return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
