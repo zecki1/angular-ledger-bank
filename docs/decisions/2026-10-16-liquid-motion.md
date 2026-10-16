@@ -24,7 +24,31 @@ Foi solicitado iniciar a Fase 1 da análise de gastos. O usuário aprovou o uso 
 
 ## Implementação
 
-Adicionar dependência: `@motionone/angular@^12.2.0` no `package.json`. Nas telas da análise de gastos (tabs, cards, transições entre abas), usar diretivas do Motion One (`m-animate`, `m-fade`, `m-slide`, etc.), verificando `prefers-reduced-motion` (Motion One já trata; também podemos condicionar manualmente quando necessário).
+Adicionar dependência: `@motionone/dom@^10.18.0` no `package.json`. Nas telas da análise de gastos (tabs, cards, transições entre abas), usar Motion One via **diretiva Angular própria** (`appMotion`), verificando `prefers-reduced-motion` (Motion One já trata; também podemos condicionar manualmente quando necessário).
+
+### Dificuldade encontrada: `@motionone/angular` não existe no npm
+
+O plano aprovado previa `@motionone/angular`, mas o pacote **nunca foi publicado**
+(`npm view @motionone/angular` → 404). A família `@motionone/*` parau na v10.18.0
+(2024-06) e só inclui os pacotes core (`dom`, `animation`, `easing`,
+`generators`, `timeline`, `types`, `popcorn`, `color`). A Motion (empresa) seguiu
+com o pacote `motion` (v14), que é maior e de outro ecossistema.
+
+**Alternativas consideradas:**
+
+| Alternativa | Prós | Contras | Veredito |
+|---|---|---|---|
+| `@motionone/angular` (plano original) | API Angular pronta | **Não existe** | Descartada (impossível) |
+| `motion` v14 (sucessor) | Mantido, API moderna | ~4× maior, feito p/ React/ecossistema web genérico, sem wrap Angular | Sobrepeso para micro-ânimações |
+| `@angular/animations` nativo | Oficial | Não é "liquid motion": sem springs/gestos, boilerplate de módulo | Não atende ao critério aprovado |
+| **`@motionone/dom` + diretiva Angular própria** | Core tiny (~5 kB gzip), WAAPI-based, `prefers-reduced-motion` nativo, **Angular-first por construção** (nós escrevemos o wrap com signals/OnPush) | Sem wrapper de terceiros — código nosso (~40 linhas) | **Escolhido** |
+
+A escolha mantém **todos os critérios do aprovado**: leve, balanceado,
+Angular-first e respeita reduced motion — só que o wrap Angular passa a ser
+nosso (`src/app/shared/directives/motion.directive.ts`), o que também evita
+depender de pacote abandonado. Registrado para transparência; se o usuário
+preferir o pacote `motion` (v14) é uma troca de uma linha na diretiva.
+
 
 ## Desafios previstos
 
