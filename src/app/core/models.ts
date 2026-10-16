@@ -22,10 +22,22 @@ export interface Transaction {
   settledAt: string;
 }
 
+export type ProvedorAuth = 'senha' | 'google' | 'demo';
+
 export interface SessionUser {
   email: string;
   name: string;
   createdAt: number;
+  /** CPF só com dígitos (sem máscara). Ausente no login demo. */
+  cpf?: string;
+  /** Data de nascimento em ISO (`YYYY-MM-DD`). */
+  nascimento?: string;
+  /** Verificação em duas etapas habilitada. */
+  mfa?: boolean;
+  /** Biometria (WebAuthn) cadastrada para este dispositivo. */
+  biometria?: boolean;
+  /** Como a sessão foi criada. */
+  provedor?: ProvedorAuth;
 }
 
 export interface CashFlowPoint {

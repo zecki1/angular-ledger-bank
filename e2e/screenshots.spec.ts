@@ -5,6 +5,7 @@ import { join } from 'node:path';
 /** Telas do produto. Públicas mostram o login; protegidas entram via login demo. */
 const PAGINAS = [
   { path: '/login', nome: 'login', publica: true },
+  { path: '/cadastro', nome: 'cadastro', publica: true },
   { path: '/dashboard', nome: 'dashboard', publica: false },
   { path: '/transacoes', nome: 'transacoes', publica: false },
   { path: '/conta/acc-corrente', nome: 'conta-extrato', publica: false },

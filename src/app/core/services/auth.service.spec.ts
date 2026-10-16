@@ -58,4 +58,65 @@ describe('AuthService', () => {
   it('normaliza o e-mail para minúsculas', () => {
     expect(createUser('Ana@Exemplo.com').email).toBe('ana@exemplo.com');
   });
+
+  it('signup cria a sessão com CPF, nascimento e provedor', () => {
+    let user: { cpf?: string; nascimento?: string; provedor?: string } | undefined;
+    service
+      .signup({
+        nome: 'Ana Souza',
+        email: 'Ana@Exemplo.com',
+        cpf: '52998224725',
+        nascimento: '1990-05-20',
+        senha: 'Senha@123',
+      })
+      .subscribe((u) => (user = u));
+
+    expect(service.isAuthenticated()).toBe(true);
+    expect(service.userEmail()).toBe('ana@exemplo.com');
+    expect(service.userName()).toBe('Ana Souza');
+    expect(user).toMatchObject({
+      cpf: '52998224725',
+      nascimento: '1990-05-20',
+      provedor: 'senha',
+    });
+    expect(JSON.parse(localStorage.getItem('ledger:session') ?? '{}')).toMatchObject({
+      email: 'ana@exemplo.com',
+    });
+  });
+
+  it('loginComGoogle cria sessão com provedor google no modo demo', () => {
+    let provedor: string | undefined;
+    service.loginComGoogle().subscribe((u) => (provedor = u.provedor));
+
+    expect(service.isAuthenticated()).toBe(true);
+    expect(provedor).toBe('google');
+  });
+
+  it('inscreverMfa devolve segredo e provisão no modo demo', () => {
+    let uri = '';
+    let segredo = '';
+    service.inscreverMfa('ana@exemplo.com').subscribe((m) => {
+      uri = m.uri;
+      segredo = m.segredo;
+    });
+
+    expect(uri).toMatch(/^otpauth:\/\/totp\//);
+    expect(segredo).toMatch(/^[A-Z2-7]{16}$/);
+  });
+
+  it('confirmarMfa marca o 2FA como habilitado', () => {
+    service.loginDemo().subscribe();
+    service.confirmarMfa('123456').subscribe();
+    expect(service.temMfa()).toBe(true);
+  });
+
+  it('definirBiometria grava a marca na sessão', () => {
+    service.loginDemo().subscribe();
+    service.definirBiometria(true);
+
+    expect(service.session()?.biometria).toBe(true);
+    expect(JSON.parse(localStorage.getItem('ledger:session') ?? '{}')).toMatchObject({
+      biometria: true,
+    });
+  });
 });

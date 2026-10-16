@@ -10,6 +10,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/login/login-page').then((m) => m.LoginPage),
   },
   {
+    path: 'cadastro',
+    title: 'Criar conta — Ledger',
+    loadComponent: () => import('./features/cadastro/cadastro-page').then((m) => m.CadastroPage),
+  },
+  {
     path: '',
     component: Shell,
     canActivate: [authGuard],

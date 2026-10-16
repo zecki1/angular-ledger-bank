@@ -4,7 +4,10 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /** Páginas públicas. As protegidas entram depois do login demo. */
-const PAGINAS_PUBLICAS = [{ path: '/login', nome: 'login' }];
+const PAGINAS_PUBLICAS = [
+  { path: '/login', nome: 'login' },
+  { path: '/cadastro', nome: 'cadastro' },
+];
 
 /** Páginas protegidas (autenticadas pelo login demo). */
 const PAGINAS_PROTEGIDAS = [

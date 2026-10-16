@@ -3,7 +3,14 @@
     "pagina": "login",
     "url": "/login",
     "violacoes": [],
-    "passes": 19,
+    "passes": 22,
+    "graves": 0
+  },
+  {
+    "pagina": "cadastro",
+    "url": "/cadastro",
+    "violacoes": [],
+    "passes": 24,
     "graves": 0
   },
   {

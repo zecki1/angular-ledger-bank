@@ -1,0 +1,322 @@
+<main class="flex min-h-svh items-center justify-center px-4 py-10">
+  <section
+    class="w-full max-w-md rounded-3xl border border-border bg-surface/70 p-8 shadow-2xl shadow-black/40 backdrop-blur"
+    aria-labelledby="cadastro-title"
+  >
+    <div class="mb-6 text-center">
+      <span
+        class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-soft to-brand font-display text-2xl font-bold text-white shadow-lg shadow-brand/25"
+        aria-hidden="true"
+      >
+        L
+      </span>
+      <h1 id="cadastro-title" class="mt-5 text-2xl font-bold">Criar sua conta</h1>
+      <p class="mt-1.5 text-sm text-mute">Leva menos de dois minutos para começar</p>
+    </div>
+
+    <!-- Indicador de passos -->
+    <ol class="mb-6 flex items-center justify-center gap-2 text-xs" aria-label="Etapas do cadastro">
+      @for (etapa of passos; track etapa.id; let i = $index) {
+        <li
+          class="flex items-center gap-2"
+          [attr.aria-current]="passo() === etapa.id ? 'step' : null"
+        >
+          <span
+            class="flex h-6 w-6 items-center justify-center rounded-full border text-[11px] font-semibold"
+            [class.bg-brand]="i <= indicePasso()"
+            [class.text-white]="i <= indicePasso()"
+            [class.border-brand]="i <= indicePasso()"
+            [class.border-border]="i > indicePasso()"
+            [class.text-mute]="i > indicePasso()"
+            aria-hidden="true"
+          >
+            {{ i + 1 }}
+          </span>
+          <span class="hidden sm:inline" [class.text-cream]="i === indicePasso()" [class.text-mute]="i !== indicePasso()">
+            {{ etapa.rotulo }}
+          </span>
+          @if (i < passos.length - 1) {
+            <span class="h-px w-6 bg-border" aria-hidden="true"></span>
+          }
+        </li>
+      }
+    </ol>
+
+    @if (passo() === 'dados') {
+      <form #cadastroForm="ngForm" (ngSubmit)="cadastrar(cadastroForm)" class="space-y-4" novalidate>
+        <div>
+          <label for="nome" class="mb-1.5 block text-sm font-medium">Nome completo</label>
+          <input
+            id="nome"
+            name="nome"
+            ngModel
+            type="text"
+            required
+            minlength="3"
+            autocomplete="name"
+            placeholder="Maria da Silva"
+            class="field"
+          />
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="nascimento" class="mb-1.5 block text-sm font-medium">Data de nascimento</label>
+            <input
+              id="nascimento"
+              name="nascimento"
+              [ngModel]="nascimento()"
+              (ngModelChange)="aoDigitarNascimento($event)"
+              type="text"
+              inputmode="numeric"
+              required
+              autocomplete="bday"
+              placeholder="dd/mm/aaaa"
+              [attr.aria-invalid]="nascimento().length === 10 && !nascimentoValido()"
+              aria-describedby="nascimento-erro"
+              class="field"
+            />
+            @if (nascimento().length === 10 && !nascimentoValido()) {
+              <p id="nascimento-erro" class="mt-1 text-xs text-down" role="alert">
+                É preciso ter ao menos {{ idadeMinima }} anos.
+              </p>
+            }
+          </div>
+
+          <div>
+            <label for="cpf" class="mb-1.5 block text-sm font-medium">CPF</label>
+            <input
+              id="cpf"
+              name="cpf"
+              [ngModel]="cpf()"
+              (ngModelChange)="aoDigitarCpf($event)"
+              type="text"
+              inputmode="numeric"
+              required
+              placeholder="000.000.000-00"
+              [attr.aria-invalid]="cpf().length === 14 && !cpfValido()"
+              aria-describedby="cpf-erro"
+              class="field"
+            />
+            @if (cpf().length === 14 && !cpfValido()) {
+              <p id="cpf-erro" class="mt-1 text-xs text-down" role="alert">CPF inválido.</p>
+            }
+          </div>
+        </div>
+
+        <div>
+          <label for="email" class="mb-1.5 block text-sm font-medium">E-mail</label>
+          <input
+            id="email"
+            name="email"
+            ngModel
+            type="email"
+            required
+            autocomplete="email"
+            placeholder="voce@email.com"
+            class="field"
+          />
+        </div>
+
+        <div>
+          <label for="senha" class="mb-1.5 block text-sm font-medium">Senha</label>
+          <input
+            id="senha"
+            name="senha"
+            [ngModel]="senha()"
+            (ngModelChange)="senha.set($event)"
+            type="password"
+            required
+            autocomplete="new-password"
+            placeholder="••••••••"
+            aria-describedby="senha-forca"
+            class="field"
+          />
+
+          <!-- Medidor de força -->
+          <div id="senha-forca" class="mt-2" aria-live="polite">
+            <div class="h-1.5 w-full overflow-hidden rounded-full bg-border" aria-hidden="true">
+              <div
+                class="h-full rounded-full transition-all"
+                [style.width.%]="forca().pontuacao"
+                [class.bg-down]="forca().pontuacao < 50"
+                [class.bg-brand]="forca().pontuacao >= 50 && forca().pontuacao < 80"
+                [class.bg-up]="forca().pontuacao >= 80"
+              ></div>
+            </div>
+            <p class="mt-1 text-xs" [class.text-mute]="!senha()">
+              @if (senha()) {
+                Senha {{ forca().rotulo }}.
+              } @else {
+                Use ao menos 8 caracteres com letras, números e símbolo.
+              }
+            </p>
+            <ul class="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+              @for (req of forca().requisitos; track req.id) {
+                <li class="flex items-center gap-1.5" [class.text-up]="req.atendido" [class.text-mute]="!req.atendido">
+                  <span aria-hidden="true">{{ req.atendido ? '✓' : '○' }}</span>
+                  {{ req.rotulo }}
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+
+        <div>
+          <label for="confirmar" class="mb-1.5 block text-sm font-medium">Confirmar senha</label>
+          <input
+            id="confirmar"
+            name="confirmar"
+            [ngModel]="confirmar()"
+            (ngModelChange)="confirmar.set($event)"
+            type="password"
+            required
+            autocomplete="new-password"
+            placeholder="••••••••"
+            [attr.aria-invalid]="confirmar().length > 0 && !senhasIguais()"
+            aria-describedby="confirmar-erro"
+            class="field"
+          />
+          @if (confirmar().length > 0 && !senhasIguais()) {
+            <p id="confirmar-erro" class="mt-1 text-xs text-down" role="alert">As senhas não coincidem.</p>
+          }
+        </div>
+
+        <label class="flex items-start gap-2 text-sm text-mute">
+          <input
+            type="checkbox"
+            name="aceite"
+            [ngModel]="aceite()"
+            (ngModelChange)="aceite.set($event)"
+            required
+            class="mt-0.5 h-4 w-4 rounded border-border bg-surface accent-brand"
+          />
+          <span>Li e aceito os termos de uso e a política de privacidade.</span>
+        </label>
+
+        @if (erro()) {
+          <p class="rounded-xl border border-down/30 bg-down/10 px-3 py-2 text-sm text-down" role="alert">
+            {{ erro() }}
+          </p>
+        }
+
+        <button
+          type="submit"
+          [disabled]="cadastroForm.invalid || !cpfValido() || !nascimentoValido() || !forca().valida || !senhasIguais() || !aceite() || loading()"
+          class="w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {{ loading() ? 'Criando conta…' : 'Continuar' }}
+        </button>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-mute">
+        Já tem conta?
+        <a routerLink="/login" class="font-medium text-brand-soft hover:underline">Entrar</a>
+      </p>
+    }
+
+    @if (passo() === 'mfa') {
+      <div class="space-y-4">
+        <p class="text-sm text-mute">
+          Escaneie o QR code no app autenticador (Google Authenticator, Authy…) e informe o
+          código de 6 dígitos.
+        </p>
+
+        @if (mfa(); as inscricao) {
+          <div class="flex flex-col items-center gap-3 rounded-2xl border border-border bg-surface p-4">
+            <img
+              [src]="qrCode(inscricao.uri)"
+              alt="QR code para configurar o app autenticador"
+              width="180"
+              height="180"
+              loading="lazy"
+              referrerpolicy="no-referrer"
+              class="rounded-lg bg-white p-2"
+            />
+            <p class="text-center text-xs text-mute">
+              Não consegue escanear? Use o código:
+              <code class="mt-1 block break-all rounded bg-surface px-2 py-1 text-cream">{{ inscricao.segredo }}</code>
+            </p>
+          </div>
+        } @else {
+          <p class="text-sm text-mute" aria-live="polite">Gerando QR code…</p>
+        }
+
+        <div>
+          <label for="codigo" class="mb-1.5 block text-sm font-medium">Código de verificação</label>
+          <input
+            id="codigo"
+            [ngModel]="codigo()"
+            (ngModelChange)="codigo.set($event)"
+            name="codigo"
+            type="text"
+            inputmode="numeric"
+            maxlength="6"
+            autocomplete="one-time-code"
+            placeholder="000000"
+            class="field text-center text-lg tracking-[0.4em]"
+          />
+        </div>
+
+        @if (erro()) {
+          <p class="rounded-xl border border-down/30 bg-down/10 px-3 py-2 text-sm text-down" role="alert">
+            {{ erro() }}
+          </p>
+        }
+
+        <button
+          type="button"
+          (click)="confirmarMfa()"
+          [disabled]="!codigoValido() || loading()"
+          class="w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {{ loading() ? 'Verificando…' : 'Verificar e continuar' }}
+        </button>
+        <button
+          type="button"
+          (click)="passo.set('biometria')"
+          class="w-full rounded-xl border border-border py-3 text-sm font-medium text-mute transition-colors hover:bg-surface"
+        >
+          Configurar depois
+        </button>
+      </div>
+    }
+
+    @if (passo() === 'biometria') {
+      <div class="space-y-4">
+        <p class="text-sm text-mute">
+          Proteja o acesso com a biometria do seu dispositivo (impressão digital ou reconhecimento
+          facial). É opcional — você pode ativar depois em Configurações.
+        </p>
+
+        @if (!biometriaDisponivel) {
+          <p class="rounded-xl border border-border bg-surface px-3 py-2 text-sm text-mute" aria-live="polite">
+            Este dispositivo não oferece biometria.
+          </p>
+        }
+
+        @if (erroBiometria()) {
+          <p class="rounded-xl border border-down/30 bg-down/10 px-3 py-2 text-sm text-down" role="alert">
+            {{ erroBiometria() }}
+          </p>
+        }
+
+        <button
+          type="button"
+          (click)="ativarBiometria()"
+          [disabled]="!biometriaDisponivel"
+          class="w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Ativar biometria
+        </button>
+        <button
+          type="button"
+          (click)="pularBiometria()"
+          class="w-full rounded-xl border border-border py-3 text-sm font-medium text-mute transition-colors hover:bg-surface"
+        >
+          Continuar sem biometria
+        </button>
+      </div>
+    }
+  </section>
+</main>

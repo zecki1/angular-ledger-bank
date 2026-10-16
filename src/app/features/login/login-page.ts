@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { AuthService } from '../../core/services/auth.service';
@@ -9,7 +9,7 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './login-page.html',
   styles: [
     `
@@ -78,6 +78,22 @@ export class LoginPage {
         error: () => {
           this.loading.set(false);
           this.error.set('Não foi possível entrar no modo demo.');
+        },
+        complete: () => this.loading.set(false),
+      });
+  }
+
+  loginGoogle(): void {
+    this.loading.set(true);
+    this.error.set('');
+    this.auth
+      .loginComGoogle()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.router.navigate(['/dashboard']),
+        error: () => {
+          this.loading.set(false);
+          this.error.set('Não foi possível entrar com o Google.');
         },
         complete: () => this.loading.set(false),
       });

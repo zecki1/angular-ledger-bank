@@ -3,8 +3,8 @@
 ![Angular](https://img.shields.io/badge/Angular-22-DD0031?logo=angular)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss)
-![E2E Tests](https://img.shields.io/badge/E2E-41%2F41%20passing-brightgreen)
-![Unit Tests](https://img.shields.io/badge/Unit-176%2F176%20passing-brightgreen)
+![E2E Tests](https://img.shields.io/badge/E2E-47%2F47%20passing-brightgreen)
+![Unit Tests](https://img.shields.io/badge/Unit-197%2F197%20passing-brightgreen)
 ![ESLint](https://img.shields.io/badge/ESLint-0%20errors-green)
 ![A11y](https://img.shields.io/badge/axe-0%20critical%20violations-brightgreen)
 ![Lighthouse](https://img.shields.io/badge/Lighthouse-A11y%2FSEO%20100-success)
@@ -20,6 +20,11 @@
 | Desktop | Mobile |
 |---------|--------|
 | ![Login Desktop](./docs/screenshots/login-desktop.jpg) | ![Login Mobile](./docs/screenshots/login-mobile.jpg) |
+
+### Cadastro (dados, 2FA e biometria)
+| Desktop | Mobile |
+|---------|--------|
+| ![Cadastro Desktop](./docs/screenshots/cadastro-desktop.jpg) | ![Cadastro Mobile](./docs/screenshots/cadastro-mobile.jpg) |
 
 ### Dashboard
 | Desktop | Mobile |
@@ -46,7 +51,7 @@
 |---------|--------|
 | ![Cotações Desktop](./docs/screenshots/integracoes-cotacoes-desktop.jpg) | ![Cotações Mobile](./docs/screenshots/integracoes-cotacoes-mobile.jpg) |
 
-> **Baselines:** 12 screenshots (6 telas × desktop/mobile) versionadas em `docs/screenshots/`, geradas por `e2e/screenshots.spec.ts` (Playwright), já autenticadas no login demo. Regerar com `npm run e2e:screenshots`.
+> **Baselines:** screenshots de 7 telas × desktop/mobile versionadas em `docs/screenshots/`, geradas por `e2e/screenshots.spec.ts` (Playwright), já autenticadas no login demo. Regerar com `npm run e2e:screenshots`.
 
 ---
 
@@ -55,7 +60,7 @@
 | Arquivo | Descrição |
 |---------|-----------|
 | [`docs/ledger-bank-case.md`](./docs/ledger-bank-case.md) | Case study: contexto, desafio, solução, métricas e "o que aprendi" |
-| [`docs/a11y/relatorio-axe.json`](./docs/a11y/relatorio-axe.json) | Relatório de acessibilidade (axe) das 8 telas |
+| [`docs/a11y/relatorio-axe.json`](./docs/a11y/relatorio-axe.json) | Relatório de acessibilidade (axe) das 9 telas |
 | [`docs/clarity-integracao.md`](./docs/clarity-integracao.md) | Integração do Microsoft Clarity (mapa de calor) |
 | [`docs/manter-online.md`](./docs/manter-online.md) | Estratégia zero-standby (custo zero) |
 
@@ -95,7 +100,8 @@ na tela de login dá acesso imediato ao dashboard.
 
 | Tela | Rota | Conteúdo |
 |------|------|----------|
-| Login | `/login` | Formulário por template + **login demo**; erro com `role="alert"` |
+| Login | `/login` | Formulário por template + **login demo** + **Google**; erro com `role="alert"` |
+| Cadastro | `/cadastro` | Fluxo em 3 passos: dados (nome, nascimento, CPF, senha forte) → **2FA/TOTP** → **biometria (WebAuthn)** |
 | Dashboard | `/dashboard` | Saldo consolidado, cards de conta, gráfico de fluxo de caixa (ECharts) |
 | Transações | `/transacoes` | Tabela com busca por descrição e paginação acessível (`aria-current`) |
 | Investimentos | `/investimentos` | Posições, filtro por classe e série histórica por período |
