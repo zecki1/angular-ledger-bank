@@ -19,6 +19,8 @@ export const environment = {
   supabaseAnonKey: ambienteLocal['VITE_SUPABASE_ANON_KEY'] ?? '',
   supabaseSchema: ambienteLocal['VITE_SUPABASE_SCHEMA'] ?? 'public',
   role: ambienteLocal['VITE_ROLE'] ?? 'demo',
+  // API Spring Boot conectada para demonstração integrada (Java + Angular)
+  apiBaseUrl: ambienteLocal['VITE_API_BASE_URL'] ?? ambienteLocal['VITE_API_URL'] ?? 'http://localhost:3001',
   // Cotações: BrAPI (brapi.dev) é a única opção gratuita que responde com
   // CORS liberado e cobre tickers brasileiros sem proxy. Sem token a API aceita
   // UM ticker por requisição, com 20 req/min e concorrência 1 — daí a fila
