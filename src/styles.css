@@ -23,6 +23,8 @@
   --color-brand: var(--brand);
   --color-brand-soft: var(--brand-soft);
   --color-brand-bg: var(--brand-bg);
+  --color-brand-hover: var(--brand-hover);
+  --color-accent: var(--accent);
   --color-up: var(--up);
   --color-up-bg: var(--up-bg);
   --color-down: var(--down);
@@ -56,9 +58,11 @@
   --border-strong: #d0d0db;
   --cream: #101015;
   --mute: #6b6b7a;
-  --brand: #5c2bd6;
-  --brand-soft: #7c4dff;
-  --brand-bg: #ede9fe;
+  --brand: #cc092f;
+  --brand-soft: #a80726;
+  --brand-hover: #b00a29;
+  --brand-bg: #fdedef;
+  --accent: #ffed00;
   --up: #047857;
   --up-bg: #d1fae5;
   --down: #b91c1c;
@@ -85,9 +89,11 @@
   --border-strong: #3a3a4e;
   --cream: #f4f4f6;
   --mute: #9a9aa8;
-  --brand: #8b5cf6;
-  --brand-soft: #a78bfa;
-  --brand-bg: #2e1a4a;
+  --brand: #cc092f;
+  --brand-soft: #ff7d8e;
+  --brand-hover: #d91e3e;
+  --brand-bg: #3a0a14;
+  --accent: #ffe600;
   --up: #34d399;
   --up-bg: #064e3b;
   --down: #f87171;
@@ -183,7 +189,7 @@ body {
 }
 
 .btn-primary:hover {
-  background: var(--brand-soft);
+  background: var(--brand-hover);
 }
 
 .btn-primary:active {

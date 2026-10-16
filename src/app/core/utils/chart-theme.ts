@@ -11,7 +11,7 @@ const FALLBACK: ChartPalette = {
   border: '#2b2b38',
   cream: '#f4f4f6',
   mute: '#9a9aa8',
-  brand: '#8b5cf6',
+  brand: '#cc092f',
 };
 
 /**

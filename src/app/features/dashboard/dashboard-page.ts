@@ -106,7 +106,7 @@ export class DashboardPage {
   });
 }
 
-/** Converte `#8b5cf6` em `rgba(139, 92, 246, alpha)` — gradiente de área. */
+/** Converte a cor hex em `rgba(r, g, b, alpha)` — gradiente de área. */
 function withAlpha(hex: string, alpha: number): string {
   const match = /^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(hex.trim());
   if (!match) {

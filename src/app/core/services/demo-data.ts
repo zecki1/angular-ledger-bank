@@ -19,7 +19,7 @@ const daysAgo = (days: number, hour = 12): string => {
 
 export const demoSeed = (): DemoSeed => {
   const accounts: Account[] = [
-    { id: 'acc-corrente', name: 'Conta Corrente', type: 'conta_corrente', balance: 8432.7, currency: 'BRL', color: '#8b5cf6' },
+    { id: 'acc-corrente', name: 'Conta Corrente', type: 'conta_corrente', balance: 8432.7, currency: 'BRL', color: '#333b8f' },
     { id: 'acc-poupanca', name: 'Poupança', type: 'poupanca', balance: 23910.15, currency: 'BRL', color: '#34d399' },
     { id: 'acc-cartao', name: 'Cartão de Crédito', type: 'cartao_credito', balance: 1240.9, currency: 'BRL', color: '#f87171' },
   ];
