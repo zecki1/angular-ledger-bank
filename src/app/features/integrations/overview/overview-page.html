@@ -46,7 +46,7 @@
           <p class="text-xs font-medium uppercase tracking-wide text-mute">Conexões ativas</p>
           <p class="mt-2 text-2xl font-bold tabular-nums">{{ conectadasCount() }}</p>
           <p class="mt-1 text-xs text-mute">
-            Fonte dos dados: {{ algumAoVivo() ? 'BrAPI ao vivo' : 'modo demonstração' }}
+            Fonte dos dados: {{ algumAoVivo() ? 'API do banco ao vivo' : 'modo demonstração' }}
           </p>
         </article>
       </div>
@@ -62,7 +62,7 @@
       <span aria-hidden="true">⚠</span>
       <span>
         <strong class="text-cream">Cotações em modo demonstração.</strong>
-        Não foi possível consultar a BrAPI{{ erro() ? ': ' + erro() : '' }} Os valores abaixo são
+        Não foi possível consultar a API de cotações do banco{{ erro() ? ': ' + erro() : '' }} Os valores abaixo são
         gerados localmente e mudam a cada ativo, mas não refletem o mercado.
       </span>
     </p>

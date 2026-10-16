@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 
 import { DEMO_TICKERS, MarketService, normalizarTicker, tickerValido } from '../../../core/services/market.service';
-import { environment } from '../../../../environments/environment';
 import {
   formatChange,
   formatCompactBRL,
@@ -31,7 +30,6 @@ export class QuotesPage implements OnInit {
   protected readonly delta = formatDeltaBRL;
   protected readonly volume = formatVolume;
 
-  protected readonly temToken = environment.brapiToken.length > 0;
   protected readonly sugestoes = DEMO_TICKERS;
 
   protected readonly busca = signal('');
@@ -49,8 +47,8 @@ export class QuotesPage implements OnInit {
   );
 
   ngOnInit(): void {
-    // Sem token a BrAPI recusa lote, então a fila serial do serviço já
-    // espaça as chamadas. Carregar tudo leva alguns segundos de propósito.
+    // A API Java busca o lote inteiro numa requisição só; o cache de 60s
+    // (no cliente e no servidor) evita repetir a chamada ao Yahoo a cada tela.
     for (const ticker of DEMO_TICKERS) {
       void this.market.cotacao(ticker);
     }

@@ -41,15 +41,15 @@ describe('ConnectionsPage', () => {
   });
 
   it('conectar move a integração para a lista de conectadas', () => {
-    const botao = host.querySelector<HTMLButtonElement>('[data-testid="conectar-brapi"]');
+    const botao = host.querySelector<HTMLButtonElement>('[data-testid="conectar-cotacoes"]');
     expect(botao).not.toBeNull();
 
     botao?.click();
     fixture.detectChanges();
 
-    expect(integracoes.isConectada('brapi')).toBe(true);
+    expect(integracoes.isConectada('cotacoes')).toBe(true);
     expect(host.querySelector('[data-testid="total-conectadas"]')?.textContent?.trim()).toBe('1');
-    expect(host.textContent).toContain('BrAPI');
+    expect(host.textContent).toContain('Cotações B3');
   });
 
   it('exige login externo nas integrações que precisam', () => {
@@ -58,7 +58,7 @@ describe('ConnectionsPage', () => {
     expect(host.querySelectorAll('span').length).toBeGreaterThan(0);
     expect([...host.querySelectorAll('h3')].map((h) => h.textContent?.trim())).toEqual([
       'Supabase',
-      'BrAPI',
+      'Cotações B3',
       'B3 / BOVESPA',
       'Tesouro Direto',
       'Binance',

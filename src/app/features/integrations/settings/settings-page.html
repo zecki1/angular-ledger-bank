@@ -65,7 +65,7 @@
   <section class="card p-5" aria-labelledby="moeda-title">
     <h2 id="moeda-title" class="text-lg font-bold">Moeda de exibição</h2>
     <p class="mt-1 text-sm text-mute">
-      Afeta apenas a apresentação. Os valores do BrAPI continuam em BRL.
+      Afeta apenas a apresentação. Os valores de cotações continuam em BRL.
     </p>
 
     <div class="mt-4 flex flex-wrap gap-2" role="group" aria-label="Moeda de exibição">
@@ -114,10 +114,9 @@
   <section class="card p-5" aria-labelledby="api-title">
     <h2 id="api-title" class="text-lg font-bold">Cotações</h2>
     <p class="mt-1 text-sm text-mute">
-      As cotações vêm da BrAPI, chamada em fila para respeitar o limite de 20 requisições por minuto
-      do plano anônimo. Sem <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">VITE_BRAPI_TOKEN</code>
-      cada ativo é consultado individualmente; com token, o app pode pedir lotes e o tempo de espera
-      some.
+      As cotações são servidas pela <strong class="text-cream">API Java do banco</strong>, que busca os
+      tickers da B3 em lote numa única chamada e mantém um cache de 60 segundos. O navegador não fala
+      com nenhuma fonte externa nem carrega token de terceiro — a integração fica toda no servidor.
     </p>
   </section>
 </div>

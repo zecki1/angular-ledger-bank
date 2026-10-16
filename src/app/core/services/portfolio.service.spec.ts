@@ -173,8 +173,8 @@ describe('PortfolioService', () => {
   });
 
   it('cai no preço médio quando a API devolve outro ticker', async () => {
-    // A BrAPI ecoa `symbol` do resultado; se vier um ticker diferente do
-    // pedido, a posição não pode herdar o preço de outro ativo.
+    // Se a API ecoar um ticker diferente do pedido, a posição não pode herdar
+    // o preço de outro ativo.
     market.tickerErrado = true;
     await portfolio.carregar();
 

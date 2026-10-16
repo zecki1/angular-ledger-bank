@@ -24,12 +24,9 @@ export const environment = {
     ambienteLocal['VITE_API_BASE_URL'] ??
     ambienteLocal['VITE_API_URL'] ??
     'https://java-spring-boot-banking-demo-production.up.railway.app',
-  // Cotações: BrAPI (brapi.dev) é a única opção gratuita que responde com
-  // CORS liberado e cobre tickers brasileiros sem proxy. Sem token a API aceita
-  // UM ticker por requisição, com 20 req/min e concorrência 1 — daí a fila
-  // serial e o cache no MarketService.
-  brapiBaseUrl: ambienteLocal['VITE_BRAPI_BASE_URL'] || 'https://brapi.dev/api',
-  brapiToken: ambienteLocal['VITE_BRAPI_TOKEN'] ?? '',
+  // Cotações: o navegador fala SÓ com a API Java acima. É o Java que fala com a
+  // fonte externa (Yahoo Finance), então nenhuma chave de terceiro chega ao
+  // frontend e não há mais dependência de CORS/token no cliente.
   clarityProjectId: ambienteLocal['CLARITY_PROJECT_ID'] ?? '',
   demoEmail: 'user@demo.dev',
 };

@@ -3,29 +3,24 @@ import { Injectable, computed, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { MarketRange, PricePoint, Quote, QuoteResult } from '../models';
 
-/** Resposta crua da BrAPI (o retorno real é snake_case). */
-interface BrapiResult {
-  symbol?: string;
-  longName?: string;
-  shortName?: string;
-  currency?: string;
-  regularMarketPrice?: number;
-  regularMarketChange?: number;
-  regularMarketChangePercent?: number;
-  regularMarketOpen?: number;
-  regularMarketDayLow?: number;
-  regularMarketDayHigh?: number;
-  regularMarketVolume?: number;
-  marketCap?: number;
-  fiftyTwoWeekLow?: number;
-  fiftyTwoWeekHigh?: number;
-  regularMarketTime?: string;
-  logourl?: string;
-  historicalDataPrice?: { date: number; close: number }[];
+/** Envelope padrão da API Java (`{ success, mensagem, data, count, timestamp }`). */
+interface RespostaApi<T> {
+  success: boolean;
+  mensagem: string;
+  data: T | null;
+  count?: number;
+  timestamp?: string;
+}
+
+/** Formato devolvido por `GET /api/mercado/series`. */
+interface SerieApi {
+  ticker: string;
+  range: string;
+  interval: string;
+  pontos: PricePoint[];
 }
 
 const TTL_MS = 60_000;
-const ESPACO_ENTRE_REQUISICOES_MS = 350;
 
 interface CacheEntry {
   quote: Quote;
@@ -35,26 +30,25 @@ interface CacheEntry {
 export const DEMO_TICKERS = ['PETR4', 'VALE3', 'ITSA4', 'B3SA3', 'WEGE3', 'MXRF11'] as const;
 
 /**
- * Cliente de cotações da BrAPI (brapi.dev).
+ * Cliente de cotações do app, falando **só** com a API Java do banco.
  *
- * Três restrições reais da API moldaram este serviço:
+ * O navegador não chama mais a BrAPI direto. Motivos:
  *
- * 1. **Um ticker por requisição** sem token (lote responde `MISSING_TOKEN`), e
- *    a fila é estritamente serial — o header `x-brapi-concurrency-limit` é 1.
- * 2. **20 requisições por minuto** sem token. Por isso existe cache com TTL e
- *    um espaçador entre chamadas: abrir a tela doze vezes não pode virar um
- *    burst de doze requests.
- * 3. **CORS liberado** (`access-control-allow-origin: *`), então nada de proxy.
+ * 1. **CORS e token** — a BrAPI responde `401` sem token e não libera CORS para
+ *    o domínio do app; a API Java resolve os dois do lado do servidor.
+ * 2. **Segredo fora do frontend** — nenhuma credencial de terceiro chega ao
+ *    navegador; o Java é o único que conversa com a fonte externa.
+ * 3. **Lote de verdade** — o Java busca vários tickers numa requisição só, então
+ *    não existe mais fila serial nem o limite de 20 req/min no cliente.
  *
- * Quando a chamada falha (offline, rate limit, ticker inexistente) o serviço
- * cai num seed determinístico: a tela nunca fica vazia nem trava, e o
- * `origin` da resposta diz ao usuário se aquilo é ao vivo ou demonstração.
+ * O cache de 60s casa com o cache do próprio Java: a tela pode abrir quantas
+ * vezes quiser que o custo externo é o mesmo. Quando a API falha (offline,
+ * `success:false`, ticker inexistente) cai no seed determinístico e o `origin`
+ * diz ao usuário se aquilo é ao vivo, cache ou demonstração.
  */
 @Injectable({ providedIn: 'root' })
 export class MarketService {
   private readonly cache = new Map<string, CacheEntry>();
-  private fila: Promise<unknown> = Promise.resolve();
-  private ultimoChamadoEm = 0;
 
   private readonly _quotes = signal<Record<string, QuoteResult>>({});
   private readonly _carregando = signal<Set<string>>(new Set());
@@ -70,67 +64,87 @@ export class MarketService {
     Object.values(this._quotes()).some((r) => r.origin === 'ao_vivo'),
   );
 
-  private readonly emVoo = new Set<string>();
-
   /** Cotação com cache; só vai à rede se o TTL venceu. */
   async cotacao(ticker: string, forcar = false): Promise<QuoteResult> {
-    const simbolo = normalizarTicker(ticker);
-    const existente = this.cache.get(simbolo);
-
-    if (!forcar && existente && Date.now() - existente.lidoEm < TTL_MS) {
-      return { quote: existente.quote, origin: 'cache' };
-    }
-    if (this.emVoo.has(simbolo)) {
-      const atual = this._quotes()[simbolo];
-      if (atual) return atual;
-    }
-
-    this.emVoo.add(simbolo);
-    this.marcarCarregando(simbolo, true);
-
-    try {
-      const quote = await this.enfileirar(() => this.buscar(simbolo));
-      this.cache.set(simbolo, { quote, lidoEm: Date.now() });
-      this.registrar({ quote, origin: 'ao_vivo' });
-      this._erro.set('');
-      this._ultimaAtualizacao.set(new Date().toISOString());
-      return { quote, origin: 'ao_vivo' };
-    } catch (erro) {
-      const message = erro instanceof Error ? erro.message : 'Falha ao consultar cotação';
-      this._erro.set(message);
-      const quote = this.cache.get(simbolo)?.quote ?? cotacaoDemo(simbolo);
-      this.cache.set(simbolo, { quote, lidoEm: Date.now() });
-      this.registrar({ quote, origin: 'demo' });
-      return { quote, origin: 'demo' };
-    } finally {
-      this.emVoo.delete(simbolo);
-      this.marcarCarregando(simbolo, false);
-    }
+    const [resultado] = await this.cotacoes([ticker], forcar);
+    return resultado;
   }
 
-  /** Várias cotações em série (a API não faz lote sem token). */
+  /**
+   * Várias cotações numa requisição só. A ordem de saída é a de entrada, e cada
+   * ticker cai no cache individualmente — pedir `[PETR4]` depois de
+   * `[PETR4, VALE3]` só toca a rede se o cache tiver vencido.
+   */
   async cotacoes(tickers: readonly string[], forcar = false): Promise<QuoteResult[]> {
-    const resultados: QuoteResult[] = [];
-    for (const ticker of tickers) {
-      resultados.push(await this.cotacao(ticker, forcar));
+    const simbolos = [...new Set(tickers.map(normalizarTicker).filter((t) => t.length > 0))];
+    if (simbolos.length === 0) {
+      return [];
     }
-    return resultados;
+
+    const resultados = new Map<string, QuoteResult>();
+    const paraBuscar: string[] = [];
+
+    for (const simbolo of simbolos) {
+      const existente = this.cache.get(simbolo);
+      if (!forcar && existente && Date.now() - existente.lidoEm < TTL_MS) {
+        resultados.set(simbolo, { quote: existente.quote, origin: 'cache' });
+      } else {
+        paraBuscar.push(simbolo);
+      }
+    }
+
+    if (paraBuscar.length > 0) {
+      this.marcarCarregando(paraBuscar, true);
+      let erro = '';
+
+      try {
+        const encontradas = await this.buscarLote(paraBuscar);
+        for (const simbolo of paraBuscar) {
+          const quote = encontradas.get(simbolo);
+          if (quote) {
+            this.cache.set(simbolo, { quote, lidoEm: Date.now() });
+            resultados.set(simbolo, { quote, origin: 'ao_vivo' });
+          } else {
+            // O Java devolveu lote sem este ticker: ele não falhou o lote todo.
+            resultados.set(simbolo, this.fallbackDemo(simbolo));
+            erro = erro || `Sem cotação para ${simbolo}`;
+          }
+        }
+      } catch (falha) {
+        erro = falha instanceof Error ? falha.message : 'Falha ao consultar cotações';
+        for (const simbolo of paraBuscar) {
+          resultados.set(simbolo, this.fallbackDemo(simbolo));
+        }
+      } finally {
+        this.marcarCarregando(paraBuscar, false);
+      }
+
+      this._erro.set(erro);
+    }
+
+    const saida = simbolos.map((s) => resultados.get(s)).filter((r): r is QuoteResult => !!r);
+    for (const resultado of saida) {
+      this.registrar(resultado);
+    }
+    if (saida.some((r) => r.origin === 'ao_vivo')) {
+      this._ultimaAtualizacao.set(new Date().toISOString());
+    }
+    return saida;
   }
 
   /** Série histórica para o sparkline/chart. Cai no seed se a API falhar. */
   async serie(ticker: string, range: MarketRange = '1mo'): Promise<PricePoint[]> {
     const simbolo = normalizarTicker(ticker);
-    const url = this.montarUrl(`/quote/${encodeURIComponent(simbolo)}?range=${range}&interval=1d`);
+    const url = `${this.base()}/api/mercado/series?ticker=${encodeURIComponent(simbolo)}&range=${range}&interval=1d`;
 
     try {
-      const bruto = await this.enfileirar(() => this.get(url));
-      const resultado = (bruto as { results?: BrapiResult[] }).results?.[0];
-      const serie = resultado?.historicalDataPrice ?? [];
-      if (serie.length > 0) {
-        return serie.map((p) => ({ date: new Date(p.date * 1000).toISOString().slice(0, 10), close: p.close }));
+      const corpo = await this.get<SerieApi>(url);
+      const pontos = corpo.data?.pontos ?? [];
+      if (pontos.length > 0) {
+        return pontos.map((p) => ({ date: String(p.date).slice(0, 10), close: p.close }));
       }
     } catch {
-      // série é um extra: a cotação principal já foi resolvida
+      // Série é um extra: a cotação principal já foi resolvida.
     }
     return serieDemo(simbolo, range);
   }
@@ -139,72 +153,56 @@ export class MarketService {
     this.cache.clear();
   }
 
-  /**
-   * Serializa as chamadas. A BrAPI só aceita uma requisição por vez
-   * (`x-brapi-concurrency-limit: 1`) e sem token são 20 por minuto — disparar
-   * N tickers em paralelo toma 429 na cara do usuário.
-   */
-  private enfileirar<T>(tarefa: () => Promise<T>): Promise<T> {
-    const proxima = this.fila.then(async () => {
-      const espera = ESPACO_ENTRE_REQUISICOES_MS - (Date.now() - this.ultimoChamadoEm);
-      if (espera > 0) {
-        await new Promise((r) => setTimeout(r, espera));
-      }
-      this.ultimoChamadoEm = Date.now();
-      return tarefa();
-    });
-    // A fila não pode morrer por causa de uma requisição anterior.
-    this.fila = proxima.catch(() => undefined);
-    return proxima;
+  // ------------------------------------------------------------------
+  // Internos
+  // ------------------------------------------------------------------
+
+  private base(): string {
+    return environment.apiBaseUrl.replace(/\/$/, '');
   }
 
-  private montarUrl(caminho: string): string {
-    const base = environment.brapiBaseUrl.replace(/\/$/, '');
-    const token = environment.brapiToken;
-    const sep = caminho.includes('?') ? '&' : '?';
-    return `${base}${caminho}${token ? `${sep}token=${encodeURIComponent(token)}` : ''}`;
+  /** Lote de cotações; o Java já cuida do `.SA`, do cache e dos timeouts. */
+  private async buscarLote(simbolos: readonly string[]): Promise<Map<string, Quote>> {
+    const url = `${this.base()}/api/mercado/cotacoes?tickers=${encodeURIComponent(simbolos.join(','))}`;
+    const corpo = await this.get<Quote[]>(url);
+    return new Map((corpo.data ?? []).map((quote) => [normalizarTicker(quote.ticker), quote]));
   }
 
-  private async buscar(simbolo: string): Promise<Quote> {
-    // Sem token a API recusa lote, então é sempre um por vez.
-    const url = this.montarUrl(`/quote/${encodeURIComponent(simbolo)}`);
-    const bruto = await this.get(url);
-    const resultado = (bruto as { results?: BrapiResult[] }).results?.[0];
-
-    if (!resultado || typeof resultado.regularMarketPrice !== 'number') {
-      throw new Error(`Sem cotação para ${simbolo}`);
-    }
-    return normalizar(resultado);
-  }
-
-  private async get(url: string): Promise<unknown> {
+  /** GET na API Java, traduzindo o envelope e os erros para o domínio do app. */
+  private async get<T>(url: string): Promise<RespostaApi<T>> {
     const resposta = await fetch(url, { headers: { Accept: 'application/json' } });
 
     if (!resposta.ok) {
-      if (resposta.status === 429) {
-        throw new Error('Limite de consultas atingido. Tente de novo em instantes.');
-      }
       throw new Error(`Cotação indisponível (${resposta.status})`);
     }
 
-    const corpo = (await resposta.json()) as { error?: boolean; message?: string };
-    if (corpo.error) {
-      throw new Error(corpo.message || 'A API recusou a consulta');
+    const corpo = (await resposta.json()) as RespostaApi<T>;
+    if (!corpo.success || corpo.data === null || corpo.data === undefined) {
+      throw new Error(corpo.mensagem || 'A API não retornou cotações');
     }
     return corpo;
+  }
+
+  /** Guarda o seed no cache para não recomputar a cada tela. */
+  private fallbackDemo(simbolo: string): QuoteResult {
+    const quote = this.cache.get(simbolo)?.quote ?? cotacaoDemo(simbolo);
+    this.cache.set(simbolo, { quote, lidoEm: Date.now() });
+    return { quote, origin: 'demo' };
   }
 
   private registrar(resultado: QuoteResult): void {
     this._quotes.update((atual) => ({ ...atual, [resultado.quote.ticker]: resultado }));
   }
 
-  private marcarCarregando(ticker: string, ativo: boolean): void {
+  private marcarCarregando(simbolos: readonly string[], ativo: boolean): void {
     this._carregando.update((atual) => {
       const proximo = new Set(atual);
-      if (ativo) {
-        proximo.add(ticker);
-      } else {
-        proximo.delete(ticker);
+      for (const simbolo of simbolos) {
+        if (ativo) {
+          proximo.add(simbolo);
+        } else {
+          proximo.delete(simbolo);
+        }
       }
       return proximo;
     });
@@ -216,30 +214,9 @@ export function normalizarTicker(ticker: string): string {
   return ticker.trim().toUpperCase();
 }
 
-/** Só letras e dígitos, 2 a 12 caracteres — o que a BrAPI aceita. */
+/** Só letras e dígitos, 2 a 12 caracteres — o que a B3 aceita. */
 export function tickerValido(ticker: string): boolean {
   return /^[A-Za-z0-9]{2,12}$/.test(ticker.trim());
-}
-
-function normalizar(r: BrapiResult): Quote {
-  const preco = r.regularMarketPrice as number;
-  return {
-    ticker: r.symbol ?? '—',
-    nome: r.longName || r.shortName || r.symbol || '—',
-    preco,
-    variacao: r.regularMarketChange ?? 0,
-    variacaoPercent: r.regularMarketChangePercent ?? 0,
-    moeda: r.currency ?? 'BRL',
-    abertura: r.regularMarketOpen ?? preco,
-    minima: r.regularMarketDayLow ?? preco,
-    maxima: r.regularMarketDayHigh ?? preco,
-    volume: r.regularMarketVolume ?? 0,
-    valorMercado: r.marketCap ?? 0,
-    minimo52: r.fiftyTwoWeekLow ?? 0,
-    maximo52: r.fiftyTwoWeekHigh ?? 0,
-    atualizadoEm: r.regularMarketTime ?? new Date().toISOString(),
-    logoUrl: r.logourl ?? '',
-  };
 }
 
 /** PRNG determinístico: o mesmo ticker devolve sempre o mesmo valor. */

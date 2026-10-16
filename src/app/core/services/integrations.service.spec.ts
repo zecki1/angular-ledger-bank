@@ -18,7 +18,7 @@ describe('IntegrationsService', () => {
     const servico = TestBed.inject(IntegrationsService);
     const ids = servico.integracoes().map((i) => i.id);
 
-    expect(ids).toEqual(['supabase', 'brapi', 'b3', 'tesouro-direto', 'binance', 'clarity']);
+    expect(ids).toEqual(['supabase', 'cotacoes', 'b3', 'tesouro-direto', 'binance', 'clarity']);
   });
 
   it('marca o que é gerenciado pelo ambiente, sem botão de conectar', () => {
@@ -45,7 +45,7 @@ describe('IntegrationsService', () => {
     expect(servico.conectadasCount()).toBe(0);
     expect(servico.disponiveisCount()).toBe(total);
 
-    servico.alternar('brapi');
+    servico.alternar('cotacoes');
     expect(servico.conectadasCount()).toBe(1);
     expect(servico.disponiveisCount()).toBe(total - 1);
   });
@@ -98,14 +98,14 @@ describe('IntegrationsService', () => {
   });
 
   it('descarta valores que não são strings', () => {
-    localStorage.setItem(CHAVE, JSON.stringify(['brapi', 42, null, { a: 1 }]));
+    localStorage.setItem(CHAVE, JSON.stringify(['cotacoes', 42, null, { a: 1 }]));
     const servico = TestBed.inject(IntegrationsService);
-    expect(servico.isConectada('brapi')).toBe(true);
+    expect(servico.isConectada('cotacoes')).toBe(true);
     expect(servico.conectadasCount()).toBe(1);
   });
 
   it('ignora um JSON que não é lista', () => {
-    localStorage.setItem(CHAVE, JSON.stringify({ brapi: true }));
+    localStorage.setItem(CHAVE, JSON.stringify({ cotacoes: true }));
     const servico = TestBed.inject(IntegrationsService);
     expect(servico.conectadasCount()).toBe(0);
   });
